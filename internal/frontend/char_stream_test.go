@@ -1,4 +1,4 @@
-package internal
+package frontend
 
 import (
 	"reflect"
@@ -40,46 +40,6 @@ func TestCharStreamString_Advance(t *testing.T) {
 			}
 			if got != tt.want {
 				t.Errorf("Advance() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestCharStreamString_Peek(t *testing.T) {
-	type fields struct {
-		chars []rune
-		idx   int
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		want    rune
-		wantErr bool
-	}{
-		{
-			name: "Advance to next char",
-			fields: fields{
-				chars: []rune{'a', 'b', 'c', 'd', 'e', 'f', 'g'},
-				idx:   0,
-			},
-			want:    'a',
-			wantErr: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			stream := &CharStreamString{
-				chars: tt.fields.chars,
-				idx:   tt.fields.idx,
-			}
-			got, err := stream.Peek()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Peek() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("Peek() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -270,7 +230,7 @@ func TestNewBufferedCharStream(t *testing.T) {
 		want *BufferedCharStream
 	}{
 		{
-			name: "Creation of buffered stream works",
+			name: "Creation of buffered inStream works",
 			args: args{
 				stream: NewCharStreamString("abcd"),
 			},
@@ -282,7 +242,7 @@ func TestNewBufferedCharStream(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewBufferedCharStream(tt.args.stream); !reflect.DeepEqual(got, tt.want) {
+			if got := NewBufferedStream(tt.args.stream); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewBufferedCharStream() = %v, want %v", got, tt.want)
 			}
 		})
