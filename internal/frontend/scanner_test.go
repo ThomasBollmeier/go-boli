@@ -27,7 +27,7 @@ func TestScanner_Advance(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    Token
+		want    *Token
 		wantErr bool
 	}{
 		{
@@ -35,7 +35,28 @@ func TestScanner_Advance(t *testing.T) {
 			fields: fields{
 				stream: *NewBufferedStream(NewCharStreamString("   (+ 41 1)")),
 			},
-			want: *NewToken(TokLeftParen, "(", 1, 4),
+			want: NewToken(TokLeftParen, "(", 1, 4),
+		},
+		{
+			name: "Get integer",
+			fields: fields{
+				stream: *NewBufferedStream(NewCharStreamString("42")),
+			},
+			want: NewToken(TokInteger, "42", 1, 1),
+		},
+		{
+			name: "Get rational number",
+			fields: fields{
+				stream: *NewBufferedStream(NewCharStreamString("126/3")),
+			},
+			want: NewToken(TokRational, "126/3", 1, 1),
+		},
+		{
+			name: "Get real number",
+			fields: fields{
+				stream: *NewBufferedStream(NewCharStreamString("3,1415")),
+			},
+			want: NewToken(TokReal, "3,1415", 1, 1),
 		},
 	}
 	for _, tt := range tests {

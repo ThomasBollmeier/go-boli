@@ -20,10 +20,9 @@ const (
 	TokSlash
 	TokCaret
 	TokPercentage
-	TokEndOfStream
 )
 
-var SingleCharTokens map[rune]TokenType = map[rune]TokenType{
+var SingleCharTokens = map[rune]TokenType{
 	'(': TokLeftParen,
 	')': TokRightParen,
 	'{': TokLeftBrace,
