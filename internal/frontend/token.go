@@ -20,6 +20,7 @@ const (
 	TokSlash
 	TokCaret
 	TokPercentage
+	TokDef
 )
 
 var SingleCharTokens = map[rune]TokenType{
@@ -35,6 +36,10 @@ var SingleCharTokens = map[rune]TokenType{
 	'/': TokSlash,
 	'^': TokCaret,
 	'%': TokPercentage,
+}
+
+var Keywords = map[string]TokenType{
+	"def": TokDef,
 }
 
 type Token struct {

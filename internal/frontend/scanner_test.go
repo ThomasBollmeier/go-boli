@@ -58,6 +58,27 @@ func TestScanner_Advance(t *testing.T) {
 			},
 			want: NewToken(TokReal, "3,1415", 1, 1),
 		},
+		{
+			name: "Get a string",
+			fields: fields{
+				stream: *NewBufferedStream(NewCharStreamString("\"Thomas sagt: \\\"Hallo!\\\"\"")),
+			},
+			want: NewToken(TokString, "\"Thomas sagt: \\\"Hallo!\\\"\"", 1, 1),
+		},
+		{
+			name: "Get an identifier",
+			fields: fields{
+				stream: *NewBufferedStream(NewCharStreamString("#number-of-lines")),
+			},
+			want: NewToken(TokIdentifier, "#number-of-lines", 1, 1),
+		},
+		{
+			name: "Get a keyword",
+			fields: fields{
+				stream: *NewBufferedStream(NewCharStreamString("\ndef")),
+			},
+			want: NewToken(TokDef, "def", 2, 1),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -72,4 +93,44 @@ func TestScanner_Advance(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestScanner_AdvanceMany(t *testing.T) {
+	code := "(+ 41 1)"
+	stream := NewBufferedStream(NewCharStreamString(code))
+	scanner := NewScanner(stream)
+
+	expectedTokens := []*Token{
+		NewToken(TokLeftParen, "(", 1, 1),
+		NewToken(TokPlus, "+", 1, 2),
+		NewToken(TokInteger, "41", 1, 4),
+		NewToken(TokInteger, "1", 1, 7),
+		NewToken(TokRightParen, ")", 1, 8),
+	}
+
+	actualTokens := getAllTokens(scanner)
+
+	if len(actualTokens) != len(expectedTokens) {
+		t.Errorf("expected %d tokens, got %d", len(expectedTokens), len(actualTokens))
+	}
+
+	for i, actualToken := range actualTokens {
+		expectedToken := expectedTokens[i]
+		if !reflect.DeepEqual(*actualToken, *expectedToken) {
+			t.Errorf("token %d: expected %v, got %v", i, *expectedToken, *actualToken)
+		}
+	}
+}
+
+func getAllTokens(scanner *Scanner) []*Token {
+	var ret []*Token
+	for {
+		tok, err := scanner.Advance()
+		if err != nil {
+			break
+		}
+		ret = append(ret, tok)
+	}
+
+	return ret
 }
