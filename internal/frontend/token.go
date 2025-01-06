@@ -38,6 +38,12 @@ var SingleCharTokens = map[rune]TokenType{
 	'%': TokPercentage,
 }
 
+var OpeningClosingPairs = map[TokenType]TokenType{
+	TokLeftParen:   TokRightParen,
+	TokLeftBracket: TokRightBracket,
+	TokLeftBrace:   TokRightBrace,
+}
+
 var Keywords = map[string]TokenType{
 	"def": TokDef,
 }
