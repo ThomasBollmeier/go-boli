@@ -113,6 +113,48 @@ func TestRun(t *testing.T) {
 			},
 			want: &Rational{3, 8},
 		},
+		{
+			name: "evaluate real number",
+			args: args{
+				code: "42,0",
+			},
+			want: &Real{42},
+		},
+		{
+			name: "evaluate real addition",
+			args: args{
+				code: "(+ 41,0 1)",
+			},
+			want: &Real{42.0},
+		},
+		{
+			name: "evaluate real subtraction",
+			args: args{
+				code: "(- 44,0 4/2)",
+			},
+			want: &Real{42.0},
+		},
+		{
+			name: "evaluate real multiplication",
+			args: args{
+				code: "[* 6,0 7,0]",
+			},
+			want: &Real{42.0},
+		},
+		{
+			name: "evaluate real division",
+			args: args{
+				code: "(/ 21 3,0)",
+			},
+			want: &Real{7.0},
+		},
+		{
+			name: "evaluate power",
+			args: args{
+				code: "(^ 2,0 3,0 2)",
+			},
+			want: &Real{512.0},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

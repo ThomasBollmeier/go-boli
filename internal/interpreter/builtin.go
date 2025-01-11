@@ -73,8 +73,7 @@ func binOp(op string, a, b ValueObject) (ValueObject, error) {
 		case "*":
 			return intA.Mul(intB), nil
 		case "/":
-			result, divErr := intA.Div(intB)
-			return result, divErr
+			return intA.Div(intB)
 		case "%":
 			return intA.Mod(intB), nil
 		case "^":
@@ -93,9 +92,26 @@ func binOp(op string, a, b ValueObject) (ValueObject, error) {
 		case "*":
 			return ratA.Mul(ratB), nil
 		case "/":
-			return ratA.Div(ratB), nil
+			return ratA.Div(ratB)
 		default:
 			return nil, errors.New("unsupported operator for rational numbers: " + op)
+		}
+	case ValueReal:
+		realA := numberA.(*Real)
+		realB := numberB.(*Real)
+		switch op {
+		case "+":
+			return realA.Add(realB), nil
+		case "-":
+			return realA.Sub(realB), nil
+		case "*":
+			return realA.Mul(realB), nil
+		case "/":
+			return realA.Div(realB)
+		case "^":
+			return realA.Pow(realB), nil
+		default:
+			return nil, errors.New("unsupported operator for real numbers: " + op)
 		}
 	default:
 		return nil, errors.New("operator '" + op + "' is not supported")

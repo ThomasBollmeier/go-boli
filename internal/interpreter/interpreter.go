@@ -51,6 +51,8 @@ func (interpreter *Interpreter) Eval(ast *frontend.AST) (ValueObject, error) {
 		return interpreter.evalInteger(ast)
 	case frontend.AstRational:
 		return interpreter.evalRational(ast)
+	case frontend.AstReal:
+		return interpreter.evalReal(ast)
 	case frontend.AstOperator:
 		return interpreter.evalOperator(ast)
 	case frontend.AstCall:
@@ -78,9 +80,9 @@ func (interpreter *Interpreter) evalCall(call *frontend.AST) (ValueObject, error
 	}
 	var arguments []ValueObject
 	for _, child := range children[1:] {
-		argument, err := interpreter.Eval(child)
-		if err != nil {
-			return nil, err
+		argument, childErr := interpreter.Eval(child)
+		if childErr != nil {
+			return nil, childErr
 		}
 		arguments = append(arguments, argument)
 	}
@@ -110,4 +112,13 @@ func (interpreter *Interpreter) evalRational(rational *frontend.AST) (ValueObjec
 		return nil, err
 	}
 	return newQuotient(numerator, denominator), nil
+}
+
+func (interpreter *Interpreter) evalReal(real *frontend.AST) (ValueObject, error) {
+	realString := strings.Replace(real.GetValue(), ",", ".", -1)
+	realValue, err := strconv.ParseFloat(realString, 0)
+	if err != nil {
+		return nil, err
+	}
+	return NewReal(realValue), nil
 }

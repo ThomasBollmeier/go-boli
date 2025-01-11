@@ -3,6 +3,7 @@ package interpreter
 import (
 	"errors"
 	"fmt"
+	"math"
 )
 
 type ValueType int
@@ -127,10 +128,13 @@ func (r *Rational) Mul(other *Rational) ValueObject {
 	return newQuotient(numerator, denominator)
 }
 
-func (r *Rational) Div(other *Rational) ValueObject {
+func (r *Rational) Div(other *Rational) (ValueObject, error) {
 	numerator := r.Numerator * other.Denominator
 	denominator := r.Denominator * other.Numerator
-	return newQuotient(numerator, denominator)
+	if denominator == 0 {
+		return nil, errors.New("division by zero")
+	}
+	return newQuotient(numerator, denominator), nil
 }
 
 func (r *Rational) String() string {
@@ -147,6 +151,29 @@ func NewReal(value float64) *Real {
 
 func (r *Real) GetValueType() ValueType {
 	return ValueReal
+}
+
+func (r *Real) Add(other *Real) ValueObject {
+	return NewReal(r.Value + other.Value)
+}
+
+func (r *Real) Sub(other *Real) ValueObject {
+	return NewReal(r.Value - other.Value)
+}
+
+func (r *Real) Mul(other *Real) ValueObject {
+	return NewReal(r.Value * other.Value)
+}
+
+func (r *Real) Div(other *Real) (ValueObject, error) {
+	if math.Abs(other.Value) < 1.0e-30 {
+		return nil, errors.New("division by zero")
+	}
+	return NewReal(r.Value / other.Value), nil
+}
+
+func (r *Real) Pow(other *Real) ValueObject {
+	return NewReal(math.Pow(r.Value, other.Value))
 }
 
 func (r *Real) String() string {
