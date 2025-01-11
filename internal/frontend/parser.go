@@ -39,6 +39,8 @@ func (p *Parser) parseExpr(token *Token) (*AST, error) {
 		return NewASTAtom(AstVariable, token), nil
 	case TokLeftParen, TokLeftBracket, TokLeftBrace:
 		return p.parseCall(token)
+	case TokPlus, TokMinus, TokAsterisk, TokSlash, TokCaret, TokPercentage:
+		return NewASTAtom(AstOperator, token), nil
 	default:
 		return nil, errors.New("unknown expression")
 	}
@@ -56,8 +58,7 @@ func (p *Parser) parseCall(start *Token) (*AST, error) {
 	switch callee.Type {
 	case TokPlus, TokMinus, TokAsterisk, TokSlash,
 		TokRightParen, TokPercentage:
-		calleeAst = NewAST(AstOperator, callee.Lexeme)
-		calleeAst.AddToken(callee)
+		calleeAst = NewASTAtom(AstOperator, callee)
 	default:
 		return nil, errors.New("unknown callee type")
 	}

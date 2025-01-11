@@ -1,15 +1,15 @@
 package frontend
 
-type AstType int
+type AstType string
 
 const (
-	AstInteger AstType = iota
-	AstRational
-	AstReal
-	AstString
-	AstVariable
-	AstCall
-	AstOperator
+	AstInteger  AstType = "Integer"
+	AstRational AstType = "Rational"
+	AstReal     AstType = "Real"
+	AstString   AstType = "String"
+	AstVariable AstType = "Variable"
+	AstCall     AstType = "Call"
+	AstOperator AstType = "Operator"
 )
 
 type AST struct {
@@ -66,4 +66,20 @@ func (ast *AST) AddChild(child *AST) {
 
 func (ast *AST) AddToken(token *Token) {
 	ast.tokens = append(ast.tokens, token)
+}
+
+func (ast *AST) GetType() AstType {
+	return ast.astType
+}
+
+func (ast *AST) GetValue() string {
+	return ast.value
+}
+
+func (ast *AST) GetChildren() []*AST {
+	return ast.children
+}
+
+func (ast *AST) GetAttributes() map[string]interface{} {
+	return ast.attrs
 }
