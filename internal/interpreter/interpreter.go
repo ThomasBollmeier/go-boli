@@ -109,5 +109,5 @@ func (interpreter *Interpreter) evalRational(rational *frontend.AST) (ValueObjec
 	if err != nil {
 		return nil, err
 	}
-	return NewRational(numerator, denominator), nil
+	return newQuotient(numerator, denominator), nil
 }

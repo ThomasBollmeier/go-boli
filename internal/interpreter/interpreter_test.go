@@ -79,6 +79,13 @@ func TestRun(t *testing.T) {
 			want: &Rational{2, 3},
 		},
 		{
+			name: "evaluate rational as integer",
+			args: args{
+				code: "21/3",
+			},
+			want: &Integer{7},
+		},
+		{
 			name: "evaluate rational addition",
 			args: args{
 				code: "(+ 1/3 2/3)",
