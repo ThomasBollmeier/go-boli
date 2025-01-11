@@ -57,7 +57,7 @@ func (p *Parser) parseCall(start *Token) (*AST, error) {
 	}
 	switch callee.Type {
 	case TokPlus, TokMinus, TokAsterisk, TokSlash,
-		TokRightParen, TokPercentage:
+		TokCaret, TokPercentage:
 		calleeAst = NewASTAtom(AstOperator, callee)
 	default:
 		return nil, errors.New("unknown callee type")

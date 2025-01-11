@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 func Run(code string) (ValueObject, error) {
@@ -34,7 +35,10 @@ func NewInterpreter(env *Environment) *Interpreter {
 
 func newGlobalEnv() *Environment {
 	ret := NewEnvironment(nil)
-	ret.Set("+", fnAdd)
+	for _, op := range []string{"+", "-", "*", "/", "%"} {
+		ret.Set(op, NewBuiltinFunc(op, makeOperatorFn(op, true)))
+	}
+	ret.Set("^", NewBuiltinFunc("^", makeOperatorFn("^", false)))
 
 	return ret
 }
@@ -45,6 +49,8 @@ func (interpreter *Interpreter) Eval(ast *frontend.AST) (ValueObject, error) {
 	switch astType {
 	case frontend.AstInteger:
 		return interpreter.evalInteger(ast)
+	case frontend.AstRational:
+		return interpreter.evalRational(ast)
 	case frontend.AstOperator:
 		return interpreter.evalOperator(ast)
 	case frontend.AstCall:
@@ -88,4 +94,20 @@ func (interpreter *Interpreter) evalOperator(op *frontend.AST) (ValueObject, err
 		return nil, errors.New(fmt.Sprintf("operator '%s' is not defined", op.GetValue()))
 	}
 	return value, nil
+}
+
+func (interpreter *Interpreter) evalRational(rational *frontend.AST) (ValueObject, error) {
+	parts := strings.Split(rational.GetValue(), "/")
+	if len(parts) != 2 {
+		return nil, errors.New("rational must be of the form 'a/b'")
+	}
+	numerator, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return nil, err
+	}
+	denominator, err := strconv.Atoi(parts[1])
+	if err != nil {
+		return nil, err
+	}
+	return NewRational(numerator, denominator), nil
 }

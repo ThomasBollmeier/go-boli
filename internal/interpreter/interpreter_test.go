@@ -22,6 +22,90 @@ func TestRun(t *testing.T) {
 			},
 			want: &Integer{42},
 		},
+		{
+			name: "evaluate addition",
+			args: args{
+				code: "(+ 41 1)",
+			},
+			want: &Integer{42},
+		},
+		{
+			name: "evaluate subtraction",
+			args: args{
+				code: "(- 43 1)",
+			},
+			want: &Integer{42},
+		},
+		{
+			name: "evaluate multiplication",
+			args: args{
+				code: "[* 6 7]",
+			},
+			want: &Integer{42},
+		},
+		{
+			name: "evaluate division",
+			args: args{
+				code: "(/ 21 3)",
+			},
+			want: &Integer{7},
+		},
+		{
+			name: "evaluate division",
+			args: args{
+				code: "(/ 1 3)",
+			},
+			want: &Rational{1, 3},
+		},
+		{
+			name: "evaluate modulo",
+			args: args{
+				code: "(% 30 7)",
+			},
+			want: &Integer{2},
+		},
+		{
+			name: "evaluate power",
+			args: args{
+				code: "(^ 2 3 2)",
+			},
+			want: &Integer{512},
+		},
+		{
+			name: "evaluate rational",
+			args: args{
+				code: "2/3",
+			},
+			want: &Rational{2, 3},
+		},
+		{
+			name: "evaluate rational addition",
+			args: args{
+				code: "(+ 1/3 2/3)",
+			},
+			want: &Integer{1},
+		},
+		{
+			name: "evaluate rational subtraction",
+			args: args{
+				code: "(- 1/2 1/3)",
+			},
+			want: &Rational{1, 6},
+		},
+		{
+			name: "evaluate rational multiplication",
+			args: args{
+				code: "(* 1/4 2/3)",
+			},
+			want: &Rational{1, 6},
+		},
+		{
+			name: "evaluate rational division",
+			args: args{
+				code: "(/ 1/4 2/3)",
+			},
+			want: &Rational{3, 8},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -1,6 +1,9 @@
 package interpreter
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 type ValueType int
 
@@ -10,6 +13,7 @@ const (
 	ValueReal
 	ValueString
 	ValueBuiltinFunc
+	ValueInvalid
 )
 
 type ValueObject interface {
@@ -17,7 +21,7 @@ type ValueObject interface {
 }
 
 type Callable interface {
-	Call(params []ValueObject) (ValueObject, error)
+	Call(args []ValueObject) (ValueObject, error)
 }
 
 type Integer struct {
@@ -30,6 +34,55 @@ func NewInteger(value int) *Integer {
 
 func (i *Integer) GetValueType() ValueType {
 	return ValueInteger
+}
+
+func (i *Integer) ToRational() ValueObject {
+	return NewRational(i.Value, 1)
+}
+
+func (i *Integer) ToReal() *Real {
+	return NewReal(float64(i.Value))
+}
+
+func (i *Integer) Add(other *Integer) ValueObject {
+	return NewInteger(i.Value + other.Value)
+}
+
+func (i *Integer) Sub(other *Integer) ValueObject {
+	return NewInteger(i.Value - other.Value)
+}
+
+func (i *Integer) Mul(other *Integer) ValueObject {
+	return NewInteger(i.Value * other.Value)
+}
+
+func (i *Integer) Div(other *Integer) (ValueObject, error) {
+	if other.Value == 0 {
+		return nil, errors.New("division by zero")
+	}
+	return newQuotient(i.Value, other.Value), nil
+}
+
+func (i *Integer) Mod(other *Integer) ValueObject {
+	return NewInteger(i.Value % other.Value)
+}
+
+func (i *Integer) Pow(other *Integer) ValueObject {
+	result := 1
+	exp := other.Value
+	if exp >= 0 {
+		for exp > 0 {
+			result *= i.Value
+			exp -= 1
+		}
+		return NewInteger(result)
+	} else {
+		exp = -exp
+		for exp > 0 {
+			result *= i.Value
+		}
+		return NewRational(1, result)
+	}
 }
 
 func (i *Integer) String() string {
@@ -52,6 +105,38 @@ func (r *Rational) GetValueType() ValueType {
 	return ValueRational
 }
 
+func (r *Rational) ToReal() *Real {
+	return NewReal(float64(r.Numerator) / float64(r.Denominator))
+}
+
+func (r *Rational) Add(other *Rational) ValueObject {
+	numerator := r.Numerator*other.Denominator + other.Numerator*r.Denominator
+	denominator := r.Denominator * other.Denominator
+	return newQuotient(numerator, denominator)
+}
+
+func (r *Rational) Sub(other *Rational) ValueObject {
+	numerator := r.Numerator*other.Denominator - other.Numerator*r.Denominator
+	denominator := r.Denominator * other.Denominator
+	return newQuotient(numerator, denominator)
+}
+
+func (r *Rational) Mul(other *Rational) ValueObject {
+	numerator := r.Numerator * other.Numerator
+	denominator := r.Denominator * other.Denominator
+	return newQuotient(numerator, denominator)
+}
+
+func (r *Rational) Div(other *Rational) ValueObject {
+	numerator := r.Numerator * other.Denominator
+	denominator := r.Denominator * other.Numerator
+	return newQuotient(numerator, denominator)
+}
+
+func (r *Rational) String() string {
+	return fmt.Sprintf("Rational(%d/%d)", r.Numerator, r.Denominator)
+}
+
 type Real struct {
 	Value float64
 }
@@ -62,6 +147,10 @@ func NewReal(value float64) *Real {
 
 func (r *Real) GetValueType() ValueType {
 	return ValueReal
+}
+
+func (r *Real) String() string {
+	return fmt.Sprintf("Real(%f)", r.Value)
 }
 
 type Str struct {
@@ -89,6 +178,28 @@ func (b *BuiltinFunc) GetValueType() ValueType {
 	return ValueBuiltinFunc
 }
 
-func (b *BuiltinFunc) Call(params []ValueObject) (ValueObject, error) {
-	return b.fn(params)
+func (b *BuiltinFunc) Call(args []ValueObject) (ValueObject, error) {
+	return b.fn(args)
+}
+
+// Helper functions
+
+func gcd(a, b int) int {
+	for b != 0 {
+		a, b = b, a%b
+	}
+	return a
+}
+
+func shorten(a, b int) (int, int) {
+	q := gcd(a, b)
+	return a / q, b / q
+}
+
+func newQuotient(numerator int, denominator int) ValueObject {
+	a, b := shorten(numerator, denominator)
+	if b == 1 {
+		return NewInteger(a)
+	}
+	return NewRational(a, b)
 }

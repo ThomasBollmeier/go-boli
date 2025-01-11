@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	code := `(+ 41 1)`
+	code := `(+ 83/2 2/4)`
 	value, err := interpreter.Run(code)
 	if err != nil {
 		fmt.Println(err)
