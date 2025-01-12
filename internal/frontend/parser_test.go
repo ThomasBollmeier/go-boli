@@ -1,6 +1,9 @@
 package frontend
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestParser_ParseExpression(t *testing.T) {
 	parser := NewParser()
@@ -62,6 +65,33 @@ func TestParser_ParseExpression(t *testing.T) {
 			if ast.value != test.wantValue {
 				t.Errorf("got ast.value %v, want %v", ast.value, test.wantValue)
 			}
+			writeAst(ast, 0)
 		})
 	}
+}
+
+func writeAst(ast *AST, indent int) {
+	const delta int = 2
+	writeln("{", indent)
+	writeln(fmt.Sprintf("type: %s", ast.astType), indent+delta)
+	writeln(fmt.Sprintf("value: %s", ast.value), indent+delta)
+	if len(ast.children) > 0 {
+		writeln("children: [", indent+delta)
+		for _, child := range ast.children {
+			writeAst(child, indent+2*delta)
+		}
+		writeln("]", indent+delta)
+	}
+	writeln("}", indent)
+}
+
+func write(text string, indent int) {
+	for i := 0; i < indent; i++ {
+		fmt.Print(" ")
+	}
+	fmt.Print(text)
+}
+
+func writeln(text string, indent int) {
+	write(text+"\n", indent)
 }

@@ -1,3 +1,3 @@
-module bitbucket.org/drbolle/go-boli
+module go-boli
 
 go 1.23.1

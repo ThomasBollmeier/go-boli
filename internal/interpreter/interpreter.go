@@ -1,9 +1,9 @@
 package interpreter
 
 import (
-	"bitbucket.org/drbolle/go-boli/internal/frontend"
 	"errors"
 	"fmt"
+	"go-boli/internal/frontend"
 	"strconv"
 	"strings"
 )

@@ -1,12 +1,13 @@
 package main
 
 import (
-	"bitbucket.org/drbolle/go-boli/internal/interpreter"
 	"fmt"
+	"go-boli/internal/interpreter"
 )
 
 func main() {
-	code := `(+ 83/2 2/4)`
+	code := `(def answer 6)
+	(* 7 answer)`
 	value, err := interpreter.Run(code)
 	if err != nil {
 		fmt.Println(err)
