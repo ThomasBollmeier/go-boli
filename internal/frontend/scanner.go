@@ -50,6 +50,11 @@ func (s *Scanner) Advance() (*Token, error) {
 	return nil, errors.New("no token could be found")
 }
 
+func (s *Scanner) HasNext() bool {
+	s.skipWhitespace()
+	return s.inStream.HasNext()
+}
+
 func (s *Scanner) scanIdentifier(ch rune, row, col int) (*Token, error) {
 	lexeme := string(ch)
 	for {

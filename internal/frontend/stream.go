@@ -4,6 +4,7 @@ import "errors"
 
 type Stream[T interface{}] interface {
 	Advance() (T, error)
+	HasNext() bool
 }
 
 type BufferedStream[T interface{}] struct {
@@ -35,6 +36,14 @@ func (bufStream *BufferedStream[T]) Advance() (T, error) {
 	}
 
 	return bufStream.stream.Advance()
+}
+
+func (bufStream *BufferedStream[T]) HasNext() bool {
+	if len(bufStream.buf) > 0 {
+		return true
+	}
+
+	return bufStream.stream.HasNext()
 }
 
 func (bufStream *BufferedStream[T]) PeekMany(n int) []T {

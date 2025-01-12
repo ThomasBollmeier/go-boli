@@ -149,11 +149,19 @@ func TestRun(t *testing.T) {
 			want: &Real{7.0},
 		},
 		{
-			name: "evaluate power",
+			name: "evaluate real power",
 			args: args{
 				code: "(^ 2,0 3,0 2)",
 			},
 			want: &Real{512.0},
+		},
+		{
+			name: "evaluate definition",
+			args: args{
+				code: `(def answer 42)
+						answer`,
+			},
+			want: &Integer{42},
 		},
 	}
 	for _, tt := range tests {

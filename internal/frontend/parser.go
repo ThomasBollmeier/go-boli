@@ -1,9 +1,12 @@
 package frontend
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 type Parser struct {
-	scanner *Scanner
+	scanner *BufferedStream[*Token]
 }
 
 func NewParser() *Parser {
@@ -11,13 +14,43 @@ func NewParser() *Parser {
 }
 
 func (p *Parser) Parse(stream CharStream) (*AST, error) {
-	p.scanner = NewScanner(stream)
-	token, err := p.scanner.Advance()
-	if err != nil {
-		return nil, err
+	p.scanner = NewBufferedStream(NewScanner(stream))
+	program := NewAST(AstProgram, "")
+
+	for p.scanner.HasNext() {
+		var child *AST
+
+		token, err := p.scanner.Advance()
+		if err != nil {
+			return nil, err
+		}
+
+		var nextToken *Token
+		switch token.Type {
+		case TokLeftParen, TokLeftBrace, TokLeftBracket:
+			nextToken, err = p.scanner.Peek()
+			if err != nil {
+				return nil, err
+			}
+			switch nextToken.Type {
+			case TokDef:
+				child, err = p.parseDefinition(token)
+			default:
+
+				child, err = p.parseExpr(token)
+			}
+		default:
+			child, err = p.parseExpr(token)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		program.AddChild(child)
 	}
 
-	return p.parseExpr(token)
+	return program, nil
 }
 
 func (p *Parser) parseExpr(token *Token) (*AST, error) {
@@ -86,4 +119,52 @@ func (p *Parser) parseCall(start *Token) (*AST, error) {
 	}
 
 	return callAst, nil
+}
+
+func (p *Parser) parseDefinition(start *Token) (*AST, error) {
+	closingType := OpeningClosingPairs[start.Type]
+	_, err := p.expect(TokDef) // scan def keyword
+	if err != nil {
+		return nil, err
+	}
+
+	var identifier *Token
+	identifier, err = p.expect(TokIdentifier)
+	if err != nil {
+		return nil, err
+	}
+
+	var value *AST
+	value, err = p.parseExpr(nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var end *Token
+	end, err = p.expect(closingType)
+	if err != nil {
+		return nil, err
+	}
+
+	ret := NewAST(AstDefinition, identifier.Lexeme)
+	ret.AddToken(start)
+	ret.AddToken(identifier)
+	ret.AddChild(value)
+	ret.AddToken(end)
+
+	return ret, nil
+}
+
+func (p *Parser) expect(tokenTypes ...TokenType) (*Token, error) {
+	ret, err := p.scanner.Advance()
+	if err != nil {
+		return nil, err
+	}
+	for _, tokenType := range tokenTypes {
+		if tokenType == ret.Type {
+			return ret, nil
+		}
+	}
+
+	return nil, errors.New(fmt.Sprintf("expected %v but got %v", tokenTypes, ret.Type))
 }

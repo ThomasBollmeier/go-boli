@@ -28,3 +28,7 @@ func (stream *CharStreamString) Advance() (rune, error) {
 	stream.idx++
 	return ret, nil
 }
+
+func (stream *CharStreamString) HasNext() bool {
+	return stream.idx < len(stream.chars)
+}

@@ -9,7 +9,8 @@ import (
 type ValueType int
 
 const (
-	ValueInteger ValueType = iota
+	ValueNil ValueType = iota
+	ValueInteger
 	ValueRational
 	ValueReal
 	ValueString
@@ -23,6 +24,18 @@ type ValueObject interface {
 
 type Callable interface {
 	Call(args []ValueObject) (ValueObject, error)
+}
+
+type NilObject struct{}
+
+var nilObject = NilObject{}
+
+func GetNilObject() ValueObject {
+	return &nilObject
+}
+
+func (n *NilObject) GetValueType() ValueType {
+	return ValueNil
 }
 
 type Integer struct {

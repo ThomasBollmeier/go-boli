@@ -41,14 +41,21 @@ func TestParser_ParseExpression(t *testing.T) {
 			wantType:  AstCall,
 			wantValue: "",
 		},
+		{
+			name:      "Parse definition",
+			code:      "  (def answer 42)\n",
+			wantType:  AstDefinition,
+			wantValue: "answer",
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			ast, err := parser.Parse(NewCharStreamString(test.code))
+			program, err := parser.Parse(NewCharStreamString(test.code))
 			if err != nil {
 				t.Fatal(err)
 			}
+			ast := program.GetChildren()[0]
 			if ast.astType != test.wantType {
 				t.Errorf("got ast.astType %v, want %v", ast.astType, test.wantType)
 			}

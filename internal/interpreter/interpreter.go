@@ -47,6 +47,12 @@ func (interpreter *Interpreter) Eval(ast *frontend.AST) (ValueObject, error) {
 	astType := ast.GetType()
 
 	switch astType {
+	case frontend.AstProgram:
+		return interpreter.evalProgram(ast)
+	case frontend.AstDefinition:
+		return interpreter.evalDefinition(ast)
+	case frontend.AstVariable:
+		return interpreter.evalVariable(ast)
 	case frontend.AstInteger:
 		return interpreter.evalInteger(ast)
 	case frontend.AstRational:
@@ -121,4 +127,39 @@ func (interpreter *Interpreter) evalReal(real *frontend.AST) (ValueObject, error
 		return nil, err
 	}
 	return NewReal(realValue), nil
+}
+
+func (interpreter *Interpreter) evalProgram(program *frontend.AST) (ValueObject, error) {
+	var ret ValueObject
+	var err error
+
+	for _, child := range program.GetChildren() {
+		ret, err = interpreter.Eval(child)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return ret, nil
+}
+
+func (interpreter *Interpreter) evalDefinition(def *frontend.AST) (ValueObject, error) {
+	name := def.GetValue()
+	valueAst := def.GetChildren()[0]
+	value, err := interpreter.Eval(valueAst)
+	if err != nil {
+		return nil, err
+	}
+	interpreter.env.Set(name, value)
+
+	return GetNilObject(), nil
+}
+
+func (interpreter *Interpreter) evalVariable(variable *frontend.AST) (ValueObject, error) {
+	varName := variable.GetValue()
+	value, ok := interpreter.env.Get(varName)
+	if !ok {
+		return nil, errors.New(fmt.Sprintf("variable '%s' is not defined", varName))
+	}
+	return value, nil
 }
