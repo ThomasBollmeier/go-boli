@@ -3,15 +3,18 @@ package frontend
 type AstType string
 
 const (
-	AstInteger    AstType = "Integer"
-	AstRational   AstType = "Rational"
-	AstReal       AstType = "Real"
-	AstString     AstType = "String"
-	AstVariable   AstType = "Variable"
-	AstCall       AstType = "Call"
-	AstOperator   AstType = "Operator"
-	AstDefinition AstType = "Definition"
-	AstProgram    AstType = "Program"
+	AstBoolean      AstType = "Boolean"
+	AstInteger      AstType = "Integer"
+	AstRational     AstType = "Rational"
+	AstReal         AstType = "Real"
+	AstString       AstType = "String"
+	AstVariable     AstType = "Variable"
+	AstCall         AstType = "Call"
+	AstOperator     AstType = "Operator"
+	AstComparisonOp AstType = "ComparisonOp"
+	AstDefinition   AstType = "Definition"
+	AstIfExpression AstType = "IfExpression"
+	AstProgram      AstType = "Program"
 )
 
 type AST struct {

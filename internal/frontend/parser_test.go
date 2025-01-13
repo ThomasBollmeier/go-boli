@@ -15,6 +15,12 @@ func TestParser_ParseExpression(t *testing.T) {
 		wantValue string
 	}{
 		{
+			name:      "Parse boolean",
+			code:      "#t",
+			wantType:  AstBoolean,
+			wantValue: "#t",
+		},
+		{
 			name:      "Parse integer",
 			code:      "42",
 			wantType:  AstInteger,
@@ -49,6 +55,16 @@ func TestParser_ParseExpression(t *testing.T) {
 			code:      "  (def answer 42)\n",
 			wantType:  AstDefinition,
 			wantValue: "answer",
+		},
+		{
+			name: "Parse if expression",
+			code: `
+(if (= answer 42)
+    "What is everything?"
+	"Come ti chiami?")
+`,
+			wantType:  AstIfExpression,
+			wantValue: "",
 		},
 	}
 

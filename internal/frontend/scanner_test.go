@@ -38,6 +38,34 @@ func TestScanner_Advance(t *testing.T) {
 			want: NewToken(TokLeftParen, "(", 1, 4),
 		},
 		{
+			name: "Get bool",
+			fields: fields{
+				stream: *NewBufferedStream(NewCharStreamString("#true")),
+			},
+			want: NewToken(TokBoolean, "#true", 1, 1),
+		},
+		{
+			name: "Get bool",
+			fields: fields{
+				stream: *NewBufferedStream(NewCharStreamString("#t")),
+			},
+			want: NewToken(TokBoolean, "#t", 1, 1),
+		},
+		{
+			name: "Get bool",
+			fields: fields{
+				stream: *NewBufferedStream(NewCharStreamString("#false")),
+			},
+			want: NewToken(TokBoolean, "#false", 1, 1),
+		},
+		{
+			name: "Get bool",
+			fields: fields{
+				stream: *NewBufferedStream(NewCharStreamString("#f")),
+			},
+			want: NewToken(TokBoolean, "#f", 1, 1),
+		},
+		{
 			name: "Get integer",
 			fields: fields{
 				stream: *NewBufferedStream(NewCharStreamString("42")),
@@ -96,17 +124,36 @@ func TestScanner_Advance(t *testing.T) {
 }
 
 func TestScanner_AdvanceMany(t *testing.T) {
-	code := "(+ 41 1)"
+	assertCode(
+		"(+ 41 1)",
+		[]*Token{
+			NewToken(TokLeftParen, "(", 1, 1),
+			NewToken(TokPlus, "+", 1, 2),
+			NewToken(TokInteger, "41", 1, 4),
+			NewToken(TokInteger, "1", 1, 7),
+			NewToken(TokRightParen, ")", 1, 8),
+		},
+		t,
+	)
+}
+
+func TestScanner_AdvanceComparisonOperators(t *testing.T) {
+	assertCode(
+		"= > >= < <=",
+		[]*Token{
+			NewToken(TokEqual, "=", 1, 1),
+			NewToken(TokGreater, ">", 1, 3),
+			NewToken(TokGreaterEq, ">=", 1, 5),
+			NewToken(TokLess, "<", 1, 8),
+			NewToken(TokLessEq, "<=", 1, 10),
+		},
+		t,
+	)
+}
+
+func assertCode(code string, expectedTokens []*Token, t *testing.T) {
 	stream := NewBufferedStream(NewCharStreamString(code))
 	scanner := NewScanner(stream)
-
-	expectedTokens := []*Token{
-		NewToken(TokLeftParen, "(", 1, 1),
-		NewToken(TokPlus, "+", 1, 2),
-		NewToken(TokInteger, "41", 1, 4),
-		NewToken(TokInteger, "1", 1, 7),
-		NewToken(TokRightParen, ")", 1, 8),
-	}
 
 	actualTokens := getAllTokens(scanner)
 

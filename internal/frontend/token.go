@@ -10,6 +10,7 @@ const (
 	TokLeftBracket
 	TokRightBracket
 	TokIdentifier
+	TokBoolean
 	TokInteger
 	TokReal
 	TokRational
@@ -20,7 +21,13 @@ const (
 	TokSlash
 	TokCaret
 	TokPercentage
+	TokEqual
+	TokGreater
+	TokGreaterEq
+	TokLess
+	TokLessEq
 	TokDef
+	TokIf
 )
 
 var SingleCharTokens = map[rune]TokenType{
@@ -45,7 +52,12 @@ var OpeningClosingPairs = map[TokenType]TokenType{
 }
 
 var Keywords = map[string]TokenType{
-	"def": TokDef,
+	"def":    TokDef,
+	"if":     TokIf,
+	"#true":  TokBoolean,
+	"#t":     TokBoolean,
+	"#false": TokBoolean,
+	"#f":     TokBoolean,
 }
 
 type Token struct {

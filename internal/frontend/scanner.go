@@ -35,6 +35,27 @@ func (s *Scanner) Advance() (*Token, error) {
 		return NewToken(tokType, string(ch), row, col), nil
 	}
 
+	switch ch {
+	case '=':
+		return NewToken(TokEqual, "=", row, col), nil
+	case '>':
+		nextCh, errNext := s.inStream.Peek()
+		if errNext == nil && nextCh == '=' {
+			_, _ = s.advanceChar()
+			return NewToken(TokGreaterEq, string(ch)+string(nextCh), row, col), nil
+		} else {
+			return NewToken(TokGreater, string(ch), row, col), nil
+		}
+	case '<':
+		nextCh, errNext := s.inStream.Peek()
+		if errNext == nil && nextCh == '=' {
+			_, _ = s.advanceChar()
+			return NewToken(TokLessEq, string(ch)+string(nextCh), row, col), nil
+		} else {
+			return NewToken(TokLess, string(ch), row, col), nil
+		}
+	}
+
 	if unicode.IsDigit(ch) {
 		return s.scanNumber(ch, row, col)
 	}

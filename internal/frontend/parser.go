@@ -36,7 +36,6 @@ func (p *Parser) Parse(stream CharStream) (*AST, error) {
 			case TokDef:
 				child, err = p.parseDefinition(token)
 			default:
-
 				child, err = p.parseExpr(token)
 			}
 		default:
@@ -64,6 +63,8 @@ func (p *Parser) parseExpr(token *Token) (*AST, error) {
 	}
 
 	switch token.Type {
+	case TokBoolean:
+		return NewASTAtom(AstBoolean, token), nil
 	case TokInteger, TokRational, TokReal:
 		return NewASTNumber(token), nil
 	case TokString:
@@ -71,9 +72,20 @@ func (p *Parser) parseExpr(token *Token) (*AST, error) {
 	case TokIdentifier:
 		return NewASTAtom(AstVariable, token), nil
 	case TokLeftParen, TokLeftBracket, TokLeftBrace:
-		return p.parseCall(token)
+		nextToken, errPeek := p.scanner.Peek()
+		if errPeek != nil {
+			return nil, errPeek
+		}
+		switch nextToken.Type {
+		case TokIf:
+			return p.parseIfExpr(token)
+		default:
+			return p.parseCall(token)
+		}
 	case TokPlus, TokMinus, TokAsterisk, TokSlash, TokCaret, TokPercentage:
 		return NewASTAtom(AstOperator, token), nil
+	case TokEqual, TokGreater, TokGreaterEq, TokLess, TokLessEq:
+		return NewASTAtom(AstComparisonOp, token), nil
 	default:
 		return nil, errors.New("unknown expression")
 	}
@@ -88,13 +100,7 @@ func (p *Parser) parseCall(start *Token) (*AST, error) {
 	if err != nil {
 		return nil, err
 	}
-	switch callee.Type {
-	case TokPlus, TokMinus, TokAsterisk, TokSlash,
-		TokCaret, TokPercentage:
-		calleeAst = NewASTAtom(AstOperator, callee)
-	default:
-		return nil, errors.New("unknown callee type")
-	}
+	calleeAst, err = p.parseExpr(callee)
 
 	callAst := NewAST(AstCall, "")
 	callAst.AddToken(start)
@@ -150,6 +156,48 @@ func (p *Parser) parseDefinition(start *Token) (*AST, error) {
 	ret.AddToken(start)
 	ret.AddToken(identifier)
 	ret.AddChild(value)
+	ret.AddToken(end)
+
+	return ret, nil
+}
+
+func (p *Parser) parseIfExpr(start *Token) (*AST, error) {
+
+	closingType := OpeningClosingPairs[start.Type]
+	_, err := p.expect(TokIf)
+	if err != nil {
+		return nil, err
+	}
+
+	var condition *AST
+	condition, err = p.parseExpr(nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var consequent *AST
+	consequent, err = p.parseExpr(nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var alternative *AST
+	alternative, err = p.parseExpr(nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var end *Token
+	end, err = p.expect(closingType)
+	if err != nil {
+		return nil, err
+	}
+
+	ret := NewAST(AstIfExpression, "")
+	ret.AddToken(start)
+	ret.AddChild(condition)
+	ret.AddChild(consequent)
+	ret.AddChild(alternative)
 	ret.AddToken(end)
 
 	return ret, nil
