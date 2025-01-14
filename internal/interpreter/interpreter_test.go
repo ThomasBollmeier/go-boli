@@ -16,6 +16,34 @@ func TestRun(t *testing.T) {
 		wantErr bool
 	}{
 		{
+			name: "evaluate #true",
+			args: args{
+				code: "#true",
+			},
+			want: &Boolean{true},
+		},
+		{
+			name: "evaluate #t",
+			args: args{
+				code: "#t",
+			},
+			want: &Boolean{true},
+		},
+		{
+			name: "evaluate #false",
+			args: args{
+				code: "#false",
+			},
+			want: &Boolean{false},
+		},
+		{
+			name: "evaluate #f",
+			args: args{
+				code: "#f",
+			},
+			want: &Boolean{false},
+		},
+		{
 			name: "evaluate integer",
 			args: args{
 				code: "42",
@@ -156,6 +184,13 @@ func TestRun(t *testing.T) {
 			want: &Real{512.0},
 		},
 		{
+			name: "evaluate string",
+			args: args{
+				code: "\"Thomas sagt: \\\"Hallo!\\\"\"",
+			},
+			want: &Str{"Thomas sagt: \"Hallo!\""},
+		},
+		{
 			name: "evaluate definition",
 			args: args{
 				code: `(def answer 42)
@@ -163,7 +198,65 @@ func TestRun(t *testing.T) {
 			},
 			want: &Integer{42},
 		},
-	}
+		{
+			name: "evaluate equal",
+			args: args{
+				code: `
+					(def answer (* 6 7))
+					(= answer 42,0)`,
+			},
+			want: &Boolean{true},
+		},
+		{
+			name: "evaluate greater",
+			args: args{
+				code: `(> 2,0 3/2 1)`,
+			},
+			want: &Boolean{true},
+		},
+		{
+			name: "evaluate greater equal",
+			args: args{
+				code: `(>= 2,0 3/2 6/4 1)`,
+			},
+			want: &Boolean{true},
+		},
+		{
+			name: "evaluate less",
+			args: args{
+				code: `(< 1 3/2 2,0)`,
+			},
+			want: &Boolean{true},
+		},
+		{
+			name: "evaluate less equal",
+			args: args{
+				code: `(<= 1 1 3/2 2,0)`,
+			},
+			want: &Boolean{true},
+		},
+		{
+			name: "evaluate if expression",
+			args: args{
+				code: `
+					(def answer 126/3)
+					(if (= answer 42)
+    					"What is everything?"
+						"Come ti chiami?")`,
+			},
+			want: &Str{"What is everything?"},
+		},
+		{
+			name: "evaluate if expression 2",
+			args: args{
+				code: `
+					(def answer 126/5)
+					(if (= answer 42)
+    					"What is everything?"
+						"Wie geht's dir?")`,
+			},
+			want: &Str{"Wie geht's dir?"},
+		}}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := Run(tt.args.code)

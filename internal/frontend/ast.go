@@ -3,6 +3,7 @@ package frontend
 type AstType string
 
 const (
+	AstNil          AstType = "Nil"
 	AstBoolean      AstType = "Boolean"
 	AstInteger      AstType = "Integer"
 	AstRational     AstType = "Rational"

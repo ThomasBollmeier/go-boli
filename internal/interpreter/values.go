@@ -10,6 +10,7 @@ type ValueType int
 
 const (
 	ValueNil ValueType = iota
+	ValueBoolean
 	ValueInteger
 	ValueRational
 	ValueReal
@@ -36,6 +37,18 @@ func GetNilObject() ValueObject {
 
 func (n *NilObject) GetValueType() ValueType {
 	return ValueNil
+}
+
+type Boolean struct {
+	Value bool
+}
+
+func NewBoolean(v bool) *Boolean {
+	return &Boolean{Value: v}
+}
+
+func (b *Boolean) GetValueType() ValueType {
+	return ValueBoolean
 }
 
 type Integer struct {
@@ -99,6 +112,26 @@ func (i *Integer) Pow(other *Integer) ValueObject {
 	}
 }
 
+func (i *Integer) Equal(other *Integer) bool {
+	return i.Value == other.Value
+}
+
+func (i *Integer) GreaterThan(other *Integer) bool {
+	return i.Value > other.Value
+}
+
+func (i *Integer) GreaterThanOrEqual(other *Integer) bool {
+	return i.Value >= other.Value
+}
+
+func (i *Integer) LessThan(other *Integer) bool {
+	return i.Value < other.Value
+}
+
+func (i *Integer) LessThanOrEqual(other *Integer) bool {
+	return i.Value <= other.Value
+}
+
 func (i *Integer) String() string {
 	return fmt.Sprintf("Integer(%d)", i.Value)
 }
@@ -150,6 +183,26 @@ func (r *Rational) Div(other *Rational) (ValueObject, error) {
 	return newQuotient(numerator, denominator), nil
 }
 
+func (r *Rational) Equal(other *Rational) bool {
+	return r.Numerator*other.Denominator == other.Numerator*r.Denominator
+}
+
+func (r *Rational) GreaterThan(other *Rational) bool {
+	return r.Numerator*other.Denominator > other.Numerator*r.Denominator
+}
+
+func (r *Rational) GreaterThanOrEqual(other *Rational) bool {
+	return r.Numerator*other.Denominator >= other.Numerator*r.Denominator
+}
+
+func (r *Rational) LessThan(other *Rational) bool {
+	return r.Numerator*other.Denominator < other.Numerator*r.Denominator
+}
+
+func (r *Rational) LessThanOrEqual(other *Rational) bool {
+	return r.Numerator*other.Denominator <= r.Numerator*r.Denominator
+}
+
 func (r *Rational) String() string {
 	return fmt.Sprintf("Rational(%d/%d)", r.Numerator, r.Denominator)
 }
@@ -187,6 +240,27 @@ func (r *Real) Div(other *Real) (ValueObject, error) {
 
 func (r *Real) Pow(other *Real) ValueObject {
 	return NewReal(math.Pow(r.Value, other.Value))
+}
+
+func (r *Real) Equal(other *Real) bool {
+	const epsilon float64 = 1.0e-30
+	return math.Abs(r.Value-other.Value) < epsilon
+}
+
+func (r *Real) GreaterThan(other *Real) bool {
+	return r.Value > other.Value
+}
+
+func (r *Real) GreaterThanOrEqual(other *Real) bool {
+	return r.Value >= other.Value
+}
+
+func (r *Real) LessThan(other *Real) bool {
+	return r.Value < other.Value
+}
+
+func (r *Real) LessThanOrEqual(other *Real) bool {
+	return r.Value <= other.Value
 }
 
 func (r *Real) String() string {

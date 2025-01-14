@@ -63,6 +63,8 @@ func (p *Parser) parseExpr(token *Token) (*AST, error) {
 	}
 
 	switch token.Type {
+	case TokNil:
+		return NewASTAtom(AstNil, token), nil
 	case TokBoolean:
 		return NewASTAtom(AstBoolean, token), nil
 	case TokInteger, TokRational, TokReal:

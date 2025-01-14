@@ -10,6 +10,7 @@ const (
 	TokLeftBracket
 	TokRightBracket
 	TokIdentifier
+	TokNil
 	TokBoolean
 	TokInteger
 	TokReal
@@ -58,6 +59,7 @@ var Keywords = map[string]TokenType{
 	"#t":     TokBoolean,
 	"#false": TokBoolean,
 	"#f":     TokBoolean,
+	"nil":    TokNil,
 }
 
 type Token struct {

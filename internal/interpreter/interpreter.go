@@ -39,6 +39,11 @@ func newGlobalEnv() *Environment {
 		ret.Set(op, NewBuiltinFunc(op, makeOperatorFn(op, true)))
 	}
 	ret.Set("^", NewBuiltinFunc("^", makeOperatorFn("^", false)))
+	for _, op := range []string{"=", ">", ">=", "<", "<="} {
+		ret.Set(op, NewBuiltinFunc(op, func(objects []ValueObject) (ValueObject, error) {
+			return compareNumbers(op, objects)
+		}))
+	}
 
 	return ret
 }
@@ -51,16 +56,26 @@ func (interpreter *Interpreter) Eval(ast *frontend.AST) (ValueObject, error) {
 		return interpreter.evalProgram(ast)
 	case frontend.AstDefinition:
 		return interpreter.evalDefinition(ast)
+	case frontend.AstIfExpression:
+		return interpreter.evalIfExpression(ast)
 	case frontend.AstVariable:
 		return interpreter.evalVariable(ast)
+	case frontend.AstNil:
+		return interpreter.evalNil()
+	case frontend.AstBoolean:
+		return interpreter.evalBoolean(ast)
 	case frontend.AstInteger:
 		return interpreter.evalInteger(ast)
 	case frontend.AstRational:
 		return interpreter.evalRational(ast)
 	case frontend.AstReal:
 		return interpreter.evalReal(ast)
+	case frontend.AstString:
+		return interpreter.evalString(ast)
 	case frontend.AstOperator:
 		return interpreter.evalOperator(ast)
+	case frontend.AstComparisonOp:
+		return interpreter.evalComparison(ast)
 	case frontend.AstCall:
 		return interpreter.evalCall(ast)
 	default:
@@ -104,6 +119,14 @@ func (interpreter *Interpreter) evalOperator(op *frontend.AST) (ValueObject, err
 	return value, nil
 }
 
+func (interpreter *Interpreter) evalComparison(op *frontend.AST) (ValueObject, error) {
+	value, found := interpreter.env.Get(op.GetValue())
+	if !found {
+		return nil, errors.New(fmt.Sprintf("comparison operator '%s' is not defined", op.GetValue()))
+	}
+	return value, nil
+}
+
 func (interpreter *Interpreter) evalRational(rational *frontend.AST) (ValueObject, error) {
 	parts := strings.Split(rational.GetValue(), "/")
 	if len(parts) != 2 {
@@ -127,6 +150,12 @@ func (interpreter *Interpreter) evalReal(real *frontend.AST) (ValueObject, error
 		return nil, err
 	}
 	return NewReal(realValue), nil
+}
+
+func (interpreter *Interpreter) evalString(str *frontend.AST) (ValueObject, error) {
+	text := str.GetValue()[1 : len(str.GetValue())-1]
+	text = strings.Replace(text, "\\\"", "\"", -1)
+	return NewString(text), nil
 }
 
 func (interpreter *Interpreter) evalProgram(program *frontend.AST) (ValueObject, error) {
@@ -155,6 +184,32 @@ func (interpreter *Interpreter) evalDefinition(def *frontend.AST) (ValueObject, 
 	return GetNilObject(), nil
 }
 
+func (interpreter *Interpreter) evalIfExpression(ifExpr *frontend.AST) (ValueObject, error) {
+	children := ifExpr.GetChildren()
+	condition, err := interpreter.Eval(children[0])
+	if err != nil {
+		return nil, err
+	}
+
+	var conditionIsTruthy bool
+
+	switch condition.GetValueType() {
+	case ValueNil:
+		conditionIsTruthy = false
+	case ValueBoolean:
+		boolValue, _ := condition.(*Boolean)
+		conditionIsTruthy = boolValue.Value
+	default:
+		conditionIsTruthy = true
+	}
+
+	if conditionIsTruthy {
+		return interpreter.Eval(children[1])
+	} else {
+		return interpreter.Eval(children[2])
+	}
+}
+
 func (interpreter *Interpreter) evalVariable(variable *frontend.AST) (ValueObject, error) {
 	varName := variable.GetValue()
 	value, ok := interpreter.env.Get(varName)
@@ -162,4 +217,19 @@ func (interpreter *Interpreter) evalVariable(variable *frontend.AST) (ValueObjec
 		return nil, errors.New(fmt.Sprintf("variable '%s' is not defined", varName))
 	}
 	return value, nil
+}
+
+func (interpreter *Interpreter) evalNil() (ValueObject, error) {
+	return GetNilObject(), nil
+}
+
+func (interpreter *Interpreter) evalBoolean(ast *frontend.AST) (ValueObject, error) {
+	switch ast.GetValue() {
+	case "#true", "#t":
+		return NewBoolean(true), nil
+	case "#false", "#f":
+		return NewBoolean(false), nil
+	default:
+		return nil, errors.New(fmt.Sprintf("boolean value '%s' is not defined", ast.GetValue()))
+	}
 }

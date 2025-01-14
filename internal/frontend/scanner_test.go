@@ -38,6 +38,13 @@ func TestScanner_Advance(t *testing.T) {
 			want: NewToken(TokLeftParen, "(", 1, 4),
 		},
 		{
+			name: "Get nil",
+			fields: fields{
+				stream: *NewBufferedStream(NewCharStreamString("nil")),
+			},
+			want: NewToken(TokNil, "nil", 1, 1),
+		},
+		{
 			name: "Get bool",
 			fields: fields{
 				stream: *NewBufferedStream(NewCharStreamString("#true")),

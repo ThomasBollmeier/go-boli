@@ -156,6 +156,69 @@ func convertNumber(value ValueObject, targetType ValueType) (ValueObject, error)
 	}
 }
 
+func compareNumbers(op string, numbers []ValueObject) (ValueObject, error) {
+	commonType, err := getCommonTypeOfNums(numbers)
+	if err != nil {
+		return nil, err
+	}
+
+	var ints []*Integer
+	var rationals []*Rational
+	var reals []*Real
+
+	for _, number := range numbers {
+		convertedNum, errConv := convertNumber(number, commonType)
+		if errConv != nil {
+			return nil, errConv
+		}
+		switch commonType {
+		case ValueInteger:
+			ints = append(ints, convertedNum.(*Integer))
+		case ValueRational:
+			rationals = append(rationals, convertedNum.(*Rational))
+		case ValueReal:
+			reals = append(reals, convertedNum.(*Real))
+		default:
+			return nil, errors.New("invalid number type")
+		}
+	}
+
+	switch commonType {
+	case ValueInteger:
+		return compare(op, ints)
+	case ValueRational:
+		return compare(op, rationals)
+	case ValueReal:
+		return compare(op, reals)
+	default:
+		return nil, errors.New("invalid number type")
+	}
+}
+
+func getCommonTypeOfNums(numbers []ValueObject) (ValueType, error) {
+	if len(numbers) == 0 {
+		return ValueInvalid, errors.New("no numbers given")
+	}
+
+	var err error
+
+	numberTypes := []ValueType{ValueInteger, ValueRational, ValueReal}
+	ret := numbers[0].GetValueType()
+	if !slices.Contains(numberTypes, ret) {
+		return ValueInvalid, errors.New("value is not a number")
+	}
+
+	for _, number := range numbers[1:] {
+		nextType := number.GetValueType()
+		ret, err = getCommonNumberType(ret, nextType)
+		if err != nil {
+			return ValueInvalid, err
+		}
+	}
+
+	return ret, nil
+}
+
 func getCommonNumberType(typeA, typeB ValueType) (ValueType, error) {
 	numberTypes := []ValueType{ValueInteger, ValueRational, ValueReal}
 

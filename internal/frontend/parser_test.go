@@ -15,6 +15,12 @@ func TestParser_ParseExpression(t *testing.T) {
 		wantValue string
 	}{
 		{
+			name:      "Parse nil",
+			code:      "nil",
+			wantType:  AstNil,
+			wantValue: "nil",
+		},
+		{
 			name:      "Parse boolean",
 			code:      "#t",
 			wantType:  AstBoolean,
@@ -39,6 +45,12 @@ func TestParser_ParseExpression(t *testing.T) {
 			wantValue: "3,1415",
 		},
 		{
+			name:      "Parse string",
+			code:      "\t\"3,1415\"\n",
+			wantType:  AstString,
+			wantValue: "\"3,1415\"",
+		},
+		{
 			name:      "Parse call",
 			code:      "\t(+ 41 1)\n",
 			wantType:  AstCall,
@@ -59,10 +71,9 @@ func TestParser_ParseExpression(t *testing.T) {
 		{
 			name: "Parse if expression",
 			code: `
-(if (= answer 42)
-    "What is everything?"
-	"Come ti chiami?")
-`,
+					(if (= answer 42)
+    					"What is everything?"
+						"Come ti chiami?")`,
 			wantType:  AstIfExpression,
 			wantValue: "",
 		},
