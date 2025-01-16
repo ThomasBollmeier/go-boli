@@ -13,6 +13,8 @@ const (
 	AstCall         AstType = "Call"
 	AstOperator     AstType = "Operator"
 	AstComparisonOp AstType = "ComparisonOp"
+	AstDisjunction  AstType = "Disjunction"
+	AstConjunction  AstType = "Conjunction"
 	AstDefinition   AstType = "Definition"
 	AstIfExpression AstType = "IfExpression"
 	AstProgram      AstType = "Program"

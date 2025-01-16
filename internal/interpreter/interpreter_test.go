@@ -191,6 +191,23 @@ func TestRun(t *testing.T) {
 			want: &Str{"Thomas sagt: \"Hallo!\""},
 		},
 		{
+			name: "evaluate conjunction",
+			args: args{
+				code: `
+					(def num 5)
+					(and (< 0 num) "Thomas")`,
+			},
+			want: &Str{"Thomas"},
+		},
+		{
+			name: "evaluate disjunction",
+			args: args{
+				code: `
+					(or nil "Thomas")`,
+			},
+			want: &Str{"Thomas"},
+		},
+		{
 			name: "evaluate definition",
 			args: args{
 				code: `(def answer 42)

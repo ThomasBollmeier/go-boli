@@ -27,6 +27,8 @@ const (
 	TokGreaterEq
 	TokLess
 	TokLessEq
+	TokAnd
+	TokOr
 	TokDef
 	TokIf
 )
@@ -60,6 +62,8 @@ var Keywords = map[string]TokenType{
 	"#false": TokBoolean,
 	"#f":     TokBoolean,
 	"nil":    TokNil,
+	"and":    TokAnd,
+	"or":     TokOr,
 }
 
 type Token struct {

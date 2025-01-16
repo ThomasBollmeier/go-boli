@@ -63,6 +63,18 @@ func TestParser_ParseExpression(t *testing.T) {
 			wantValue: "",
 		},
 		{
+			name:      "Parse conjunction",
+			code:      "(and (< 0 num) (< num 10))",
+			wantType:  AstConjunction,
+			wantValue: "",
+		},
+		{
+			name:      "Parse disjunction",
+			code:      "(or (<= num 0) (>= num 10))",
+			wantType:  AstDisjunction,
+			wantValue: "",
+		},
+		{
 			name:      "Parse definition",
 			code:      "  (def answer 42)\n",
 			wantType:  AstDefinition,

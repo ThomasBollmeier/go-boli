@@ -76,6 +76,10 @@ func (interpreter *Interpreter) Eval(ast *frontend.AST) (ValueObject, error) {
 		return interpreter.evalOperator(ast)
 	case frontend.AstComparisonOp:
 		return interpreter.evalComparison(ast)
+	case frontend.AstConjunction:
+		return interpreter.evalConjunction(ast)
+	case frontend.AstDisjunction:
+		return interpreter.evalDisjunction(ast)
 	case frontend.AstCall:
 		return interpreter.evalCall(ast)
 	default:
@@ -191,19 +195,7 @@ func (interpreter *Interpreter) evalIfExpression(ifExpr *frontend.AST) (ValueObj
 		return nil, err
 	}
 
-	var conditionIsTruthy bool
-
-	switch condition.GetValueType() {
-	case ValueNil:
-		conditionIsTruthy = false
-	case ValueBoolean:
-		boolValue, _ := condition.(*Boolean)
-		conditionIsTruthy = boolValue.Value
-	default:
-		conditionIsTruthy = true
-	}
-
-	if conditionIsTruthy {
+	if interpreter.isTruthy(condition) {
 		return interpreter.Eval(children[1])
 	} else {
 		return interpreter.Eval(children[2])
@@ -232,4 +224,51 @@ func (interpreter *Interpreter) evalBoolean(ast *frontend.AST) (ValueObject, err
 	default:
 		return nil, errors.New(fmt.Sprintf("boolean value '%s' is not defined", ast.GetValue()))
 	}
+}
+
+func (interpreter *Interpreter) evalConjunction(conj *frontend.AST) (ValueObject, error) {
+	var ret ValueObject = NewBoolean(true)
+	var err error
+
+	for _, child := range conj.GetChildren() {
+		ret, err = interpreter.Eval(child)
+		if err != nil {
+			return nil, err
+		}
+		if !interpreter.isTruthy(ret) {
+			return NewBoolean(false), nil
+		}
+	}
+
+	return ret, nil
+}
+
+func (interpreter *Interpreter) evalDisjunction(disj *frontend.AST) (ValueObject, error) {
+	var ret ValueObject = NewBoolean(true)
+	var err error
+
+	for _, child := range disj.GetChildren() {
+		ret, err = interpreter.Eval(child)
+		if err != nil {
+			return nil, err
+		}
+		if interpreter.isTruthy(ret) {
+			return ret, nil
+		}
+	}
+
+	return NewBoolean(false), nil
+}
+
+func (interpreter *Interpreter) isTruthy(value ValueObject) bool {
+	switch value.GetValueType() {
+	case ValueNil:
+		return false
+	case ValueBoolean:
+		boolValue, _ := value.(*Boolean)
+		return boolValue.Value
+	default:
+		return true
+	}
+
 }

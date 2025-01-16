@@ -114,6 +114,20 @@ func TestScanner_Advance(t *testing.T) {
 			},
 			want: NewToken(TokDef, "def", 2, 1),
 		},
+		{
+			name: "Get keyword and",
+			fields: fields{
+				stream: *NewBufferedStream(NewCharStreamString("\nand")),
+			},
+			want: NewToken(TokAnd, "and", 2, 1),
+		},
+		{
+			name: "Get keyword or",
+			fields: fields{
+				stream: *NewBufferedStream(NewCharStreamString("or")),
+			},
+			want: NewToken(TokOr, "or", 1, 1),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

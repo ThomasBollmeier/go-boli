@@ -81,6 +81,8 @@ func (p *Parser) parseExpr(token *Token) (*AST, error) {
 		switch nextToken.Type {
 		case TokIf:
 			return p.parseIfExpr(token)
+		case TokAnd, TokOr:
+			return p.parseLogicalOp(token)
 		default:
 			return p.parseCall(token)
 		}
@@ -91,6 +93,48 @@ func (p *Parser) parseExpr(token *Token) (*AST, error) {
 	default:
 		return nil, errors.New("unknown expression")
 	}
+}
+
+func (p *Parser) parseLogicalOp(start *Token) (*AST, error) {
+	var token *Token
+	var expr *AST
+	var err error
+
+	token, err = p.expect(TokAnd, TokOr)
+	if err != nil {
+		return nil, err
+	}
+
+	var astType AstType
+	if token.Type == TokAnd {
+		astType = AstConjunction
+	} else {
+		astType = AstDisjunction
+	}
+
+	ret := NewAST(astType, "")
+	ret.AddToken(start)
+	ret.AddToken(token)
+
+	closingType := OpeningClosingPairs[start.Type]
+
+	for {
+		token, err = p.scanner.Advance()
+		if err != nil {
+			return nil, err
+		}
+		if token.Type == closingType {
+			ret.AddToken(token)
+			break
+		}
+		expr, err = p.parseExpr(token)
+		if err != nil {
+			return nil, err
+		}
+		ret.AddChild(expr)
+	}
+
+	return ret, nil
 }
 
 func (p *Parser) parseCall(start *Token) (*AST, error) {
