@@ -72,6 +72,14 @@ func (ast *AST) AddChild(child *AST) {
 	}
 }
 
+func (ast *AST) ReplaceLastChild(newChild *AST) {
+	n := len(ast.children)
+	if n == 0 {
+		return
+	}
+	ast.children = append(ast.children[:n-1], newChild)
+}
+
 func (ast *AST) AddToken(token *Token) {
 	ast.tokens = append(ast.tokens, token)
 }

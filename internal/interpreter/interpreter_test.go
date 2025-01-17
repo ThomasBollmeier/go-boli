@@ -267,13 +267,36 @@ func TestRun(t *testing.T) {
 			name: "evaluate if expression 2",
 			args: args{
 				code: `
-					(def answer 126/5)
+					(def answer 126/4)
 					(if (= answer 42)
     					"What is everything?"
 						"Wie geht's dir?")`,
 			},
 			want: &Str{"Wie geht's dir?"},
-		}}
+		},
+		{
+			name: "evaluate cond expression",
+			args: args{
+				code: `
+					(def answer 126/4)
+					(cond
+						[(= answer 42) "What is everything?"]
+						[#t "Wie geht's dir?"])`,
+			},
+			want: &Str{"Wie geht's dir?"},
+		},
+		{
+			name: "evaluate cond expression without match",
+			args: args{
+				code: `
+					(def answer 126/4)
+					(cond
+						[(= answer 42) "What is everything?"]
+						[#f "Wie geht's dir?"])`,
+			},
+			want: &NilObject{},
+		},
+	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := Run(tt.args.code)

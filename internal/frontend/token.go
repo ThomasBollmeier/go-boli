@@ -31,6 +31,7 @@ const (
 	TokOr
 	TokDef
 	TokIf
+	TokCond
 )
 
 var SingleCharTokens = map[rune]TokenType{
@@ -57,6 +58,7 @@ var OpeningClosingPairs = map[TokenType]TokenType{
 var Keywords = map[string]TokenType{
 	"def":    TokDef,
 	"if":     TokIf,
+	"cond":   TokCond,
 	"#true":  TokBoolean,
 	"#t":     TokBoolean,
 	"#false": TokBoolean,

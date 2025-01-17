@@ -89,6 +89,15 @@ func TestParser_ParseExpression(t *testing.T) {
 			wantType:  AstIfExpression,
 			wantValue: "",
 		},
+		{
+			name: "Parse cond expression",
+			code: `
+					(cond
+						[(= answer 42) "What is everything?"]
+						[#t	"Come ti chiami?"])`,
+			wantType:  AstIfExpression,
+			wantValue: "",
+		},
 	}
 
 	for _, test := range tests {

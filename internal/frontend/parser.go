@@ -81,6 +81,8 @@ func (p *Parser) parseExpr(token *Token) (*AST, error) {
 		switch nextToken.Type {
 		case TokIf:
 			return p.parseIfExpr(token)
+		case TokCond:
+			return p.parseCondExpr(token)
 		case TokAnd, TokOr:
 			return p.parseLogicalOp(token)
 		default:
@@ -245,6 +247,75 @@ func (p *Parser) parseIfExpr(start *Token) (*AST, error) {
 	ret.AddChild(consequent)
 	ret.AddChild(alternative)
 	ret.AddToken(end)
+
+	return ret, nil
+}
+
+func (p *Parser) parseCondExpr(start *Token) (*AST, error) {
+	var token *Token
+	var err error
+	var prevIf *AST = nil
+	var clauseCond *AST
+	var clauseExpr *AST
+
+	ret := NewAST(AstIfExpression, "")
+	ret.AddToken(start)
+
+	closingType := OpeningClosingPairs[start.Type]
+	token, err = p.expect(TokCond)
+	if err != nil {
+		return nil, err
+	}
+
+	ret.AddToken(token)
+
+	currIf := ret
+
+	for {
+		token, err = p.expect(closingType, TokLeftParen, TokLeftBrace, TokLeftBracket)
+		if err != nil {
+			return nil, err
+		}
+
+		if token.Type == closingType {
+			ret.AddToken(token)
+			break
+		}
+
+		currIf.AddToken(token)
+		clauseClosingType := OpeningClosingPairs[token.Type]
+
+		clauseCond, err = p.parseExpr(nil)
+		if err != nil {
+			return nil, err
+		}
+		currIf.AddChild(clauseCond)
+
+		clauseExpr, err = p.parseExpr(nil)
+		if err != nil {
+			return nil, err
+		}
+		currIf.AddChild(clauseExpr)
+
+		token, err = p.expect(clauseClosingType)
+		if err != nil {
+			return nil, err
+		}
+		currIf.AddToken(token)
+
+		nextIf := NewAST(AstIfExpression, "")
+		currIf.AddChild(nextIf)
+		prevIf = currIf
+		currIf = nextIf
+	}
+
+	if len(ret.GetChildren()) == 0 {
+		return nil, errors.New("cond expression has no clauses")
+	}
+
+	if prevIf != nil {
+		prevIf.ReplaceLastChild(NewAST(AstNil, ""))
+	}
 
 	return ret, nil
 }
