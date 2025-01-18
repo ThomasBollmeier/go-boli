@@ -21,29 +21,32 @@ const (
 )
 
 type AST struct {
-	astType  AstType
-	value    string
-	children []*AST
-	tokens   []*Token
-	attrs    map[string]interface{}
+	astType          AstType
+	value            string
+	tokensOrChildren []TokenOrChild
+	attrs            map[string]interface{}
+}
+
+type TokenOrChild struct {
+	token *Token
+	child *AST
 }
 
 func NewAST(astType AstType, value string) *AST {
 	return &AST{
-		astType:  astType,
-		value:    value,
-		children: make([]*AST, 0),
-		tokens:   make([]*Token, 0),
-		attrs:    make(map[string]interface{}),
+		astType:          astType,
+		value:            value,
+		tokensOrChildren: make([]TokenOrChild, 0),
+		attrs:            make(map[string]interface{}),
 	}
 }
 
 func NewASTAtom(astType AstType, token *Token) *AST {
 	return &AST{
-		astType: astType,
-		value:   token.Lexeme,
-		tokens:  []*Token{token},
-		attrs:   make(map[string]interface{}),
+		astType:          astType,
+		value:            token.Lexeme,
+		tokensOrChildren: []TokenOrChild{{token, nil}},
+		attrs:            make(map[string]interface{}),
 	}
 
 }
@@ -66,22 +69,23 @@ func NewASTNumber(token *Token) *AST {
 }
 
 func (ast *AST) AddChild(child *AST) {
-	ast.children = append(ast.children, child)
-	for _, token := range child.tokens {
-		ast.tokens = append(ast.tokens, token)
-	}
+	ast.tokensOrChildren = append(ast.tokensOrChildren, TokenOrChild{child: child})
 }
 
 func (ast *AST) ReplaceLastChild(newChild *AST) {
-	n := len(ast.children)
-	if n == 0 {
-		return
+	lastIdx := -1
+	for idx, tokenOrChild := range ast.tokensOrChildren {
+		if tokenOrChild.child != nil {
+			lastIdx = idx
+		}
 	}
-	ast.children = append(ast.children[:n-1], newChild)
+	if lastIdx != -1 {
+		ast.tokensOrChildren[lastIdx] = TokenOrChild{child: newChild}
+	}
 }
 
 func (ast *AST) AddToken(token *Token) {
-	ast.tokens = append(ast.tokens, token)
+	ast.tokensOrChildren = append(ast.tokensOrChildren, TokenOrChild{token: token})
 }
 
 func (ast *AST) GetType() AstType {
@@ -93,9 +97,30 @@ func (ast *AST) GetValue() string {
 }
 
 func (ast *AST) GetChildren() []*AST {
-	return ast.children
+	var ret []*AST
+	for _, tokenOrChild := range ast.tokensOrChildren {
+		if tokenOrChild.child != nil {
+			ret = append(ret, tokenOrChild.child)
+		}
+	}
+	return ret
 }
 
 func (ast *AST) GetAttributes() map[string]interface{} {
 	return ast.attrs
+}
+
+func (ast *AST) GetLexemes() string {
+	ret := ""
+	for _, tokenOrChild := range ast.tokensOrChildren {
+		if len(ret) > 0 {
+			ret += " "
+		}
+		if tokenOrChild.child != nil {
+			ret += tokenOrChild.child.GetLexemes()
+		} else {
+			ret += tokenOrChild.token.Lexeme
+		}
+	}
+	return ret
 }

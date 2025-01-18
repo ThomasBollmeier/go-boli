@@ -114,6 +114,7 @@ func TestParser_ParseExpression(t *testing.T) {
 				t.Errorf("got ast.value %v, want %v", ast.value, test.wantValue)
 			}
 			writeAst(ast, 0)
+			fmt.Println(ast.GetLexemes())
 		})
 	}
 }
@@ -123,9 +124,10 @@ func writeAst(ast *AST, indent int) {
 	writeln("{", indent)
 	writeln(fmt.Sprintf("type: %s", ast.astType), indent+delta)
 	writeln(fmt.Sprintf("value: %s", ast.value), indent+delta)
-	if len(ast.children) > 0 {
+	children := ast.GetChildren()
+	if len(children) > 0 {
 		writeln("children: [", indent+delta)
-		for _, child := range ast.children {
+		for _, child := range children {
 			writeAst(child, indent+2*delta)
 		}
 		writeln("]", indent+delta)

@@ -177,7 +177,7 @@ func (p *Parser) parseCall(start *Token) (*AST, error) {
 
 func (p *Parser) parseDefinition(start *Token) (*AST, error) {
 	closingType := OpeningClosingPairs[start.Type]
-	_, err := p.expect(TokDef) // scan def keyword
+	tokenDef, err := p.expect(TokDef) // scan def keyword
 	if err != nil {
 		return nil, err
 	}
@@ -202,6 +202,7 @@ func (p *Parser) parseDefinition(start *Token) (*AST, error) {
 
 	ret := NewAST(AstDefinition, identifier.Lexeme)
 	ret.AddToken(start)
+	ret.AddToken(tokenDef)
 	ret.AddToken(identifier)
 	ret.AddChild(value)
 	ret.AddToken(end)
@@ -212,7 +213,7 @@ func (p *Parser) parseDefinition(start *Token) (*AST, error) {
 func (p *Parser) parseIfExpr(start *Token) (*AST, error) {
 
 	closingType := OpeningClosingPairs[start.Type]
-	_, err := p.expect(TokIf)
+	tokenIf, err := p.expect(TokIf)
 	if err != nil {
 		return nil, err
 	}
@@ -243,6 +244,7 @@ func (p *Parser) parseIfExpr(start *Token) (*AST, error) {
 
 	ret := NewAST(AstIfExpression, "")
 	ret.AddToken(start)
+	ret.AddToken(tokenIf)
 	ret.AddChild(condition)
 	ret.AddChild(consequent)
 	ret.AddChild(alternative)
