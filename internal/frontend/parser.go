@@ -18,38 +18,42 @@ func (p *Parser) Parse(stream CharStream) (*AST, error) {
 	program := NewAST(AstProgram, "")
 
 	for p.scanner.HasNext() {
-		var child *AST
-
-		token, err := p.scanner.Advance()
+		child, err := p.parseDefOrExpr(nil)
 		if err != nil {
 			return nil, err
 		}
-
-		var nextToken *Token
-		switch token.Type {
-		case TokLeftParen, TokLeftBrace, TokLeftBracket:
-			nextToken, err = p.scanner.Peek()
-			if err != nil {
-				return nil, err
-			}
-			switch nextToken.Type {
-			case TokDef:
-				child, err = p.parseDefinition(token)
-			default:
-				child, err = p.parseExpr(token)
-			}
-		default:
-			child, err = p.parseExpr(token)
-		}
-
-		if err != nil {
-			return nil, err
-		}
-
 		program.AddChild(child)
 	}
 
 	return program, nil
+}
+
+func (p *Parser) parseDefOrExpr(token *Token) (*AST, error) {
+	var err error
+
+	if token == nil {
+		token, err = p.scanner.Advance()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	var nextToken *Token
+	switch token.Type {
+	case TokLeftParen, TokLeftBrace, TokLeftBracket:
+		nextToken, err = p.scanner.Peek()
+		if err != nil {
+			return nil, err
+		}
+		switch nextToken.Type {
+		case TokDef:
+			return p.parseDefinition(token)
+		default:
+			return p.parseExpr(token)
+		}
+	default:
+		return p.parseExpr(token)
+	}
 }
 
 func (p *Parser) parseExpr(token *Token) (*AST, error) {
@@ -83,6 +87,10 @@ func (p *Parser) parseExpr(token *Token) (*AST, error) {
 			return p.parseIfExpr(token)
 		case TokCond:
 			return p.parseCondExpr(token)
+		case TokBlock:
+			return p.parseBlock(token)
+		case TokLet:
+			return p.parseLetExpr(token)
 		case TokAnd, TokOr:
 			return p.parseLogicalOp(token)
 		default:
@@ -318,6 +326,149 @@ func (p *Parser) parseCondExpr(start *Token) (*AST, error) {
 	if prevIf != nil {
 		prevIf.ReplaceLastChild(NewAST(AstNil, ""))
 	}
+
+	return ret, nil
+}
+
+func (p *Parser) parseBlock(token *Token) (*AST, error) {
+	var child *AST
+
+	ret := NewAST(AstBlock, "")
+	ret.AddToken(token)
+
+	tokenBlock, err := p.expect(TokBlock)
+	if err != nil {
+		return nil, err
+	}
+	ret.AddToken(tokenBlock)
+
+	closingType := OpeningClosingPairs[token.Type]
+
+	for {
+		token, err = p.scanner.Advance()
+		if err != nil {
+			return nil, err
+		}
+
+		if token.Type == closingType {
+			ret.AddToken(token)
+			break
+		}
+
+		child, err = p.parseDefOrExpr(token)
+		if err != nil {
+			return nil, err
+		}
+
+		ret.AddChild(child)
+	}
+
+	return ret, nil
+}
+
+func (p *Parser) parseLetExpr(token *Token) (*AST, error) {
+	var definitions []*AST
+	var tokenDefStart, tokenDefEnd *Token
+	var child *AST
+
+	ret := NewAST(AstBlock, "")
+	ret.AddToken(token)
+
+	closingType := OpeningClosingPairs[token.Type]
+
+	token, err := p.expect(TokLet)
+	if err != nil {
+		return nil, err
+	}
+	ret.AddToken(token)
+
+	tokenDefStart, definitions, tokenDefEnd, err = p.parseLetDefinitions()
+	if err != nil {
+		return nil, err
+	}
+	ret.AddToken(tokenDefStart)
+	for _, definition := range definitions {
+		ret.AddChild(definition)
+	}
+	ret.AddToken(tokenDefEnd)
+
+	for {
+		token, err = p.scanner.Advance()
+		if err != nil {
+			return nil, err
+		}
+
+		if token.Type == closingType {
+			ret.AddToken(token)
+			break
+		}
+
+		child, err = p.parseExpr(token)
+		if err != nil {
+			return nil, err
+		}
+
+		ret.AddChild(child)
+	}
+
+	return ret, nil
+}
+
+func (p *Parser) parseLetDefinitions() (*Token, []*AST, *Token, error) {
+	var defs []*AST
+	var def *AST
+	var start, end, token *Token
+	var err error
+
+	start, err = p.expect(TokLeftParen, TokLeftBrace, TokLeftBracket)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	endType := OpeningClosingPairs[start.Type]
+
+	for {
+		token, err = p.scanner.Advance()
+		if err != nil {
+			return nil, nil, nil, err
+		}
+		if token.Type == endType {
+			end = token
+			break
+		}
+		def, err = p.parseLetDefinition(token)
+		if err != nil {
+			return nil, nil, nil, err
+		}
+		defs = append(defs, def)
+	}
+
+	return start, defs, end, err
+}
+
+func (p *Parser) parseLetDefinition(start *Token) (*AST, error) {
+
+	endType := OpeningClosingPairs[start.Type]
+
+	identifier, err := p.expect(TokIdentifier)
+	if err != nil {
+		return nil, err
+	}
+
+	value, err := p.parseExpr(nil)
+	if err != nil {
+		return nil, err
+	}
+
+	end, err := p.expect(endType)
+	if err != nil {
+		return nil, err
+	}
+
+	ret := NewAST(AstDefinition, identifier.Lexeme)
+	ret.AddToken(start)
+	ret.AddToken(identifier)
+	ret.AddChild(value)
+	ret.AddToken(end)
 
 	return ret, nil
 }

@@ -296,6 +296,28 @@ func TestRun(t *testing.T) {
 			},
 			want: &NilObject{},
 		},
+		{
+			name: "evaluate block expression",
+			args: args{
+				code: `
+					(def answer 43)
+					(block
+						(def answer 42)
+						answer)`,
+			},
+			want: &Integer{42},
+		},
+		{
+			name: "evaluate let expression",
+			args: args{
+				code: `
+					(let ([forty 40]
+                          [two 2]
+                          [answer (+ forty two)])
+						answer)`,
+			},
+			want: &Integer{42},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

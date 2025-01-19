@@ -58,6 +58,8 @@ func (interpreter *Interpreter) Eval(ast *frontend.AST) (ValueObject, error) {
 		return interpreter.evalDefinition(ast)
 	case frontend.AstIfExpression:
 		return interpreter.evalIfExpression(ast)
+	case frontend.AstBlock:
+		return interpreter.evalBlock(ast)
 	case frontend.AstVariable:
 		return interpreter.evalVariable(ast)
 	case frontend.AstNil:
@@ -163,8 +165,8 @@ func (interpreter *Interpreter) evalString(str *frontend.AST) (ValueObject, erro
 }
 
 func (interpreter *Interpreter) evalProgram(program *frontend.AST) (ValueObject, error) {
-	var ret ValueObject
 	var err error
+	ret := GetNilObject()
 
 	for _, child := range program.GetChildren() {
 		ret, err = interpreter.Eval(child)
@@ -200,6 +202,25 @@ func (interpreter *Interpreter) evalIfExpression(ifExpr *frontend.AST) (ValueObj
 	} else {
 		return interpreter.Eval(children[2])
 	}
+}
+
+func (interpreter *Interpreter) evalBlock(block *frontend.AST) (ValueObject, error) {
+	var err error
+	ret := GetNilObject()
+
+	interpreter.beginBlockScope()
+
+	for _, child := range block.GetChildren() {
+		ret, err = interpreter.Eval(child)
+		if err != nil {
+			interpreter.endBlockScope()
+			return nil, err
+		}
+	}
+
+	interpreter.endBlockScope()
+
+	return ret, nil
 }
 
 func (interpreter *Interpreter) evalVariable(variable *frontend.AST) (ValueObject, error) {
@@ -270,5 +291,12 @@ func (interpreter *Interpreter) isTruthy(value ValueObject) bool {
 	default:
 		return true
 	}
+}
 
+func (interpreter *Interpreter) beginBlockScope() {
+	interpreter.env = NewEnvironment(interpreter.env)
+}
+
+func (interpreter *Interpreter) endBlockScope() {
+	interpreter.env = interpreter.env.parent
 }

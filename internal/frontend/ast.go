@@ -17,6 +17,7 @@ const (
 	AstConjunction  AstType = "Conjunction"
 	AstDefinition   AstType = "Definition"
 	AstIfExpression AstType = "IfExpression"
+	AstBlock        AstType = "Block"
 	AstProgram      AstType = "Program"
 )
 

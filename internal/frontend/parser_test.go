@@ -98,6 +98,25 @@ func TestParser_ParseExpression(t *testing.T) {
 			wantType:  AstIfExpression,
 			wantValue: "",
 		},
+		{
+			name: "Parse block expression",
+			code: `
+				(block
+					(def answer 42)
+					answer)`,
+			wantType:  AstBlock,
+			wantValue: "",
+		},
+		{
+			name: "Parse let expression",
+			code: `
+				(let ([forty 40]
+                	  [two 2]
+                      [answer (+ forty two)])
+					answer)`,
+			wantType:  AstBlock,
+			wantValue: "",
+		},
 	}
 
 	for _, test := range tests {
