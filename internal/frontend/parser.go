@@ -187,15 +187,22 @@ func (p *Parser) parseCall(start *Token) (*AST, error) {
 
 func (p *Parser) parseDefinition(start *Token) (*AST, error) {
 	closingType := OpeningClosingPairs[start.Type]
+
 	tokenDef, err := p.expect(TokDef) // scan def keyword
 	if err != nil {
 		return nil, err
 	}
 
-	var identifier *Token
-	identifier, err = p.expect(TokIdentifier)
+	var token, identifier *Token
+	token, err = p.expect(TokIdentifier, TokLeftParen, TokLeftBracket, TokLeftBrace)
 	if err != nil {
 		return nil, err
+	}
+	switch token.Type {
+	case TokIdentifier:
+		identifier = token
+	default:
+		return p.parseFuncDef(start, tokenDef, token)
 	}
 
 	var value *AST
@@ -216,6 +223,76 @@ func (p *Parser) parseDefinition(start *Token) (*AST, error) {
 	ret.AddToken(identifier)
 	ret.AddChild(value)
 	ret.AddToken(end)
+
+	return ret, nil
+}
+
+func (p *Parser) parseFuncDef(start, tokenDef, startFunc *Token) (*AST, error) {
+	endType := OpeningClosingPairs[start.Type]
+	endFuncType := OpeningClosingPairs[startFunc.Type]
+
+	var identifier *Token
+	var err error
+
+	identifier, err = p.expect(TokIdentifier)
+	if err != nil {
+		return nil, err
+	}
+
+	ret := NewAST(AstDefinition, identifier.Lexeme)
+	ret.AddToken(start)
+	ret.AddToken(tokenDef)
+
+	lambda := NewAST(AstLambda, identifier.Lexeme)
+	lambda.AddToken(startFunc)
+	lambda.AddToken(identifier)
+
+	params := NewAST(AstParameters, "")
+	var token, tokenEndParams *Token
+paramsLoop:
+	for {
+		token, err = p.scanner.Advance()
+		if err != nil {
+			return nil, err
+		}
+		switch token.Type {
+		case TokIdentifier:
+			params.AddChild(NewASTAtom(AstVariable, token))
+		case endFuncType:
+			tokenEndParams = token
+			break paramsLoop
+		default:
+			return nil, errors.New("expected identifier as parameter")
+		}
+	}
+
+	lambda.AddChild(params)
+	lambda.AddToken(tokenEndParams)
+
+	block := NewAST(AstBlock, "")
+	var tokenEnd *Token
+	var child *AST
+
+	for {
+		token, err = p.scanner.Advance()
+		if err != nil {
+			return nil, err
+		}
+		if token.Type == endType {
+			tokenEnd = token
+			break
+		}
+
+		child, err = p.parseDefOrExpr(token)
+		if err != nil {
+			return nil, err
+		}
+		block.AddChild(child)
+	}
+
+	lambda.AddChild(block)
+	ret.AddChild(lambda)
+	ret.AddToken(tokenEnd)
 
 	return ret, nil
 }

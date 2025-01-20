@@ -58,6 +58,8 @@ func (interpreter *Interpreter) Eval(ast *frontend.AST) (ValueObject, error) {
 		return interpreter.evalDefinition(ast)
 	case frontend.AstIfExpression:
 		return interpreter.evalIfExpression(ast)
+	case frontend.AstLambda:
+		return interpreter.evalLambda(ast)
 	case frontend.AstBlock:
 		return interpreter.evalBlock(ast)
 	case frontend.AstVariable:
@@ -202,6 +204,18 @@ func (interpreter *Interpreter) evalIfExpression(ifExpr *frontend.AST) (ValueObj
 	} else {
 		return interpreter.Eval(children[2])
 	}
+}
+
+func (interpreter *Interpreter) evalLambda(lambda *frontend.AST) (ValueObject, error) {
+	name := lambda.GetLexemes()
+	children := lambda.GetChildren()
+	var params []string
+	for _, p := range children[0].GetChildren() {
+		params = append(params, p.GetValue())
+	}
+	body := children[1]
+
+	return NewLambdaFunc(name, params, body, interpreter.env), nil
 }
 
 func (interpreter *Interpreter) evalBlock(block *frontend.AST) (ValueObject, error) {

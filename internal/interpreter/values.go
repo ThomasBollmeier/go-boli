@@ -10,6 +10,7 @@ const (
 	ValueReal
 	ValueString
 	ValueBuiltinFunc
+	ValueLambda
 	ValueInvalid
 )
 

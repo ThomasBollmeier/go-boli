@@ -318,6 +318,36 @@ func TestRun(t *testing.T) {
 			},
 			want: &Integer{42},
 		},
+		{
+			name: "evaluate lambda call",
+			args: args{
+				code: `
+					((λ (a b)
+						(+ a b))
+                      40 2)`,
+			},
+			want: &Integer{42},
+		},
+		{
+			name: "evaluate function call",
+			args: args{
+				code: `
+					(def (add a b)
+            			(+ a b))
+					(add 40 2)`,
+			},
+			want: &Integer{42},
+		},
+		{
+			name: "evaluate closure call",
+			args: args{
+				code: `
+					(def (make-adder n)
+						(lambda (m) (+ m n)))
+					((make-adder 2) 40)`,
+			},
+			want: &Integer{42},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

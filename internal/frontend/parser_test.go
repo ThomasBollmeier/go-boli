@@ -128,6 +128,17 @@ func TestParser_ParseExpression(t *testing.T) {
 			wantType:  AstDefinition,
 			wantValue: "fib",
 		},
+		{
+			name: "Parse function definition",
+			code: `
+				(def (fib n)
+					(cond 
+						[(= n 0) 0]
+						[(= n 1) 1]
+						[#t (+ (fib (- n 2)) (fib (- n 1)))]))`,
+			wantType:  AstDefinition,
+			wantValue: "fib",
+		},
 	}
 
 	for _, test := range tests {
