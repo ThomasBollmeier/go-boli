@@ -25,6 +25,8 @@ func (p *Parser) Parse(stream CharStream) (*AST, error) {
 		program.AddChild(child)
 	}
 
+	findTailCalls(program)
+
 	return program, nil
 }
 

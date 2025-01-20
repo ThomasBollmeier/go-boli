@@ -23,6 +23,10 @@ const (
 	AstProgram      AstType = "Program"
 )
 
+const (
+	AstAttrKeyIsTailCall string = "is-tail-call"
+)
+
 type AST struct {
 	astType          AstType
 	value            string
@@ -91,6 +95,10 @@ func (ast *AST) AddToken(token *Token) {
 	ast.tokensOrChildren = append(ast.tokensOrChildren, TokenOrChild{token: token})
 }
 
+func (ast *AST) SetAttribute(key string, value interface{}) {
+	ast.attrs[key] = value
+}
+
 func (ast *AST) GetType() AstType {
 	return ast.astType
 }
@@ -111,6 +119,11 @@ func (ast *AST) GetChildren() []*AST {
 
 func (ast *AST) GetAttributes() map[string]interface{} {
 	return ast.attrs
+}
+
+func (ast *AST) GetAttribute(key string) (interface{}, bool) {
+	value, ok := ast.attrs[key]
+	return value, ok
 }
 
 func (ast *AST) GetLexemes() string {

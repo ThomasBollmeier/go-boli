@@ -173,6 +173,15 @@ func writeAst(ast *AST, indent int) {
 		}
 		writeln("]", indent+delta)
 	}
+	attrs := ast.GetAttributes()
+	if len(attrs) > 0 {
+		writeln("attributes: [", indent+delta)
+		offset := indent + 2*delta
+		for key, value := range attrs {
+			writeln(fmt.Sprintf("%s: %v", key, value), offset)
+		}
+		writeln("]", indent+delta)
+	}
 	writeln("}", indent)
 }
 

@@ -107,6 +107,7 @@ func (interpreter *Interpreter) evalCall(call *frontend.AST) (ValueObject, error
 	if !ok {
 		return nil, errors.New("callee is not a callable")
 	}
+
 	var arguments []ValueObject
 	for _, child := range children[1:] {
 		argument, childErr := interpreter.Eval(child)
@@ -116,7 +117,31 @@ func (interpreter *Interpreter) evalCall(call *frontend.AST) (ValueObject, error
 		arguments = append(arguments, argument)
 	}
 
-	return callable.Call(arguments)
+	isTailCall := false
+	value, ok := call.GetAttribute(frontend.AstAttrKeyIsTailCall)
+	if ok {
+		isTailCall = value.(bool)
+	}
+
+	if isTailCall {
+		return NewTailCall(callable, arguments), nil
+	}
+
+	var ret ValueObject
+	for {
+		ret, err = callable.Call(arguments)
+		if err != nil {
+			return nil, err
+		}
+		switch ret.GetValueType() {
+		case ValueTailCall:
+			tailCall := ret.(*TailCall)
+			callable = tailCall.callable
+			arguments = tailCall.args
+		default:
+			return ret, nil
+		}
+	}
 }
 
 func (interpreter *Interpreter) evalOperator(op *frontend.AST) (ValueObject, error) {
@@ -207,7 +232,7 @@ func (interpreter *Interpreter) evalIfExpression(ifExpr *frontend.AST) (ValueObj
 }
 
 func (interpreter *Interpreter) evalLambda(lambda *frontend.AST) (ValueObject, error) {
-	name := lambda.GetLexemes()
+	name := lambda.GetValue()
 	children := lambda.GetChildren()
 	var params []string
 	for _, p := range children[0].GetChildren() {
@@ -278,11 +303,11 @@ func (interpreter *Interpreter) evalConjunction(conj *frontend.AST) (ValueObject
 	return ret, nil
 }
 
-func (interpreter *Interpreter) evalDisjunction(disj *frontend.AST) (ValueObject, error) {
+func (interpreter *Interpreter) evalDisjunction(disjunction *frontend.AST) (ValueObject, error) {
 	var ret ValueObject = NewBoolean(true)
 	var err error
 
-	for _, child := range disj.GetChildren() {
+	for _, child := range disjunction.GetChildren() {
 		ret, err = interpreter.Eval(child)
 		if err != nil {
 			return nil, err

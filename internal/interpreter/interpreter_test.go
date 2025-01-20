@@ -348,6 +348,18 @@ func TestRun(t *testing.T) {
 			},
 			want: &Integer{42},
 		},
+		{
+			name: "evaluate with tail-call-optimization",
+			args: args{
+				code: `
+					(def (sum n acc)
+						(if (= n 0)
+							acc
+							(sum (- n 1) (+ acc n))))
+					(sum 9 0)`,
+			},
+			want: &Integer{45},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

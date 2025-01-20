@@ -68,3 +68,16 @@ func (l *LambdaFunc) Call(args []ValueObject) (ValueObject, error) {
 
 	return ret, nil
 }
+
+type TailCall struct {
+	callable Callable
+	args     []ValueObject
+}
+
+func NewTailCall(callable Callable, args []ValueObject) *TailCall {
+	return &TailCall{callable, args}
+}
+
+func (tc *TailCall) GetValueType() ValueType {
+	return ValueTailCall
+}

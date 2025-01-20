@@ -11,6 +11,7 @@ const (
 	ValueString
 	ValueBuiltinFunc
 	ValueLambda
+	ValueTailCall
 	ValueInvalid
 )
 
