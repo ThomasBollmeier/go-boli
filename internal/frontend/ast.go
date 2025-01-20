@@ -10,6 +10,8 @@ const (
 	AstReal         AstType = "Real"
 	AstString       AstType = "String"
 	AstVariable     AstType = "Variable"
+	AstLambda       AstType = "Lambda"
+	AstParameters   AstType = "Parameters"
 	AstCall         AstType = "Call"
 	AstOperator     AstType = "Operator"
 	AstComparisonOp AstType = "ComparisonOp"

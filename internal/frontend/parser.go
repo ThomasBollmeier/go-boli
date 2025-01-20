@@ -91,6 +91,8 @@ func (p *Parser) parseExpr(token *Token) (*AST, error) {
 			return p.parseBlock(token)
 		case TokLet:
 			return p.parseLetExpr(token)
+		case TokLambda:
+			return p.parseLambda(token)
 		case TokAnd, TokOr:
 			return p.parseLogicalOp(token)
 		default:
@@ -469,6 +471,75 @@ func (p *Parser) parseLetDefinition(start *Token) (*AST, error) {
 	ret.AddToken(identifier)
 	ret.AddChild(value)
 	ret.AddToken(end)
+
+	return ret, nil
+}
+
+func (p *Parser) parseLambda(start *Token) (*AST, error) {
+	ret := NewAST(AstLambda, "")
+	ret.AddToken(start)
+
+	endType := OpeningClosingPairs[start.Type]
+
+	token, err := p.expect(TokLambda)
+	if err != nil {
+		return nil, err
+	}
+	ret.AddToken(token)
+
+	token, err = p.expect(TokLeftParen, TokLeftBrace, TokLeftBracket)
+	if err != nil {
+		return nil, err
+	}
+	ret.AddToken(token)
+
+	params := NewAST(AstParameters, "")
+	endParamsType := OpeningClosingPairs[token.Type]
+
+	var tokenEndParams *Token
+paramsLoop:
+	for {
+		token, err = p.scanner.Advance()
+		if err != nil {
+			return nil, err
+		}
+		switch token.Type {
+		case TokIdentifier:
+			params.AddChild(NewASTAtom(AstVariable, token))
+		case endParamsType:
+			tokenEndParams = token
+			break paramsLoop
+		default:
+			return nil, errors.New("expected identifier as parameter")
+		}
+	}
+
+	ret.AddChild(params)
+	ret.AddToken(tokenEndParams)
+
+	block := NewAST(AstBlock, "")
+	var tokenEnd *Token
+	var child *AST
+
+	for {
+		token, err = p.scanner.Advance()
+		if err != nil {
+			return nil, err
+		}
+		if token.Type == endType {
+			tokenEnd = token
+			break
+		}
+
+		child, err = p.parseDefOrExpr(token)
+		if err != nil {
+			return nil, err
+		}
+		block.AddChild(child)
+	}
+
+	ret.AddChild(block)
+	ret.AddToken(tokenEnd)
 
 	return ret, nil
 }

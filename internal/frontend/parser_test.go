@@ -117,6 +117,17 @@ func TestParser_ParseExpression(t *testing.T) {
 			wantType:  AstBlock,
 			wantValue: "",
 		},
+		{
+			name: "Parse lambda expression",
+			code: `
+				(def fib (λ (n)
+					     	(cond 
+								[(= n 0) 0]
+								[(= n 1) 1]
+								[#t (+ (fib (- n 2)) (fib (- n 1)))])))`,
+			wantType:  AstDefinition,
+			wantValue: "fib",
+		},
 	}
 
 	for _, test := range tests {

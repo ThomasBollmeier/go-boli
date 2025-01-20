@@ -34,6 +34,7 @@ const (
 	TokCond
 	TokBlock
 	TokLet
+	TokLambda
 )
 
 var SingleCharTokens = map[rune]TokenType{
@@ -49,6 +50,7 @@ var SingleCharTokens = map[rune]TokenType{
 	'/': TokSlash,
 	'^': TokCaret,
 	'%': TokPercentage,
+	'λ': TokLambda,
 }
 
 var OpeningClosingPairs = map[TokenType]TokenType{
@@ -70,6 +72,7 @@ var Keywords = map[string]TokenType{
 	"nil":    TokNil,
 	"and":    TokAnd,
 	"or":     TokOr,
+	"lambda": TokLambda,
 }
 
 type Token struct {
