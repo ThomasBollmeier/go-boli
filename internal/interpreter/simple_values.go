@@ -274,6 +274,10 @@ func shorten(a, b int) (int, int) {
 
 func newQuotient(numerator int, denominator int) ValueObject {
 	a, b := shorten(numerator, denominator)
+	if b < 0 {
+		b = -b
+		a = -a
+	}
 	if b == 1 {
 		return NewInteger(a)
 	}

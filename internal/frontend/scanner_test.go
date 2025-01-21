@@ -80,6 +80,13 @@ func TestScanner_Advance(t *testing.T) {
 			want: NewToken(TokInteger, "42", 1, 1),
 		},
 		{
+			name: "Get negative integer",
+			fields: fields{
+				stream: *NewBufferedStream(NewCharStreamString("-42")),
+			},
+			want: NewToken(TokInteger, "-42", 1, 1),
+		},
+		{
 			name: "Get rational number",
 			fields: fields{
 				stream: *NewBufferedStream(NewCharStreamString("126/3")),
@@ -89,9 +96,9 @@ func TestScanner_Advance(t *testing.T) {
 		{
 			name: "Get real number",
 			fields: fields{
-				stream: *NewBufferedStream(NewCharStreamString("3,1415")),
+				stream: *NewBufferedStream(NewCharStreamString("+3,1415")),
 			},
-			want: NewToken(TokReal, "3,1415", 1, 1),
+			want: NewToken(TokReal, "+3,1415", 1, 1),
 		},
 		{
 			name: "Get a string",

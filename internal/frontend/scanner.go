@@ -36,6 +36,18 @@ func (s *Scanner) Advance() (*Token, error) {
 	}
 
 	switch ch {
+	case '+', '-':
+		nextCh, errNext := s.inStream.Peek()
+		if ch == '+' {
+			tokType = TokPlus
+		} else {
+			tokType = TokMinus
+		}
+		if errNext != nil || !unicode.IsDigit(nextCh) {
+			return NewToken(tokType, string(ch), row, col), nil
+		} else {
+			return s.scanNumber(ch, row, col)
+		}
 	case '=':
 		return NewToken(TokEqual, "=", row, col), nil
 	case '>':

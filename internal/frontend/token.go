@@ -44,8 +44,6 @@ var SingleCharTokens = map[rune]TokenType{
 	'}': TokRightBrace,
 	'[': TokLeftBracket,
 	']': TokRightBracket,
-	'+': TokPlus,
-	'-': TokMinus,
 	'*': TokAsterisk,
 	'/': TokSlash,
 	'^': TokCaret,
