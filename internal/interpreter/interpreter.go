@@ -9,27 +9,25 @@ import (
 )
 
 func Run(code string) (ValueObject, error) {
-	parser := frontend.NewParser()
-	ast, err := parser.Parse(frontend.NewCharStreamString(code))
-	if err != nil {
-		return nil, err
-	}
 	interpreter := NewInterpreter(nil)
-	return interpreter.Eval(ast)
+	return interpreter.Run(code)
 }
 
 type Interpreter struct {
-	env *Environment
+	env    *Environment
+	parser *frontend.Parser
 }
 
 func NewInterpreter(env *Environment) *Interpreter {
 	if env == nil {
 		return &Interpreter{
-			env: newGlobalEnv(),
+			env:    newGlobalEnv(),
+			parser: frontend.NewParser(),
 		}
 	}
 	return &Interpreter{
-		env: env,
+		env:    env,
+		parser: frontend.NewParser(),
 	}
 }
 
@@ -46,6 +44,14 @@ func newGlobalEnv() *Environment {
 	}
 
 	return ret
+}
+
+func (interpreter *Interpreter) Run(code string) (ValueObject, error) {
+	ast, err := interpreter.parser.Parse(frontend.NewCharStreamString(code))
+	if err != nil {
+		return nil, err
+	}
+	return interpreter.Eval(ast)
 }
 
 func (interpreter *Interpreter) Eval(ast *frontend.AST) (ValueObject, error) {
