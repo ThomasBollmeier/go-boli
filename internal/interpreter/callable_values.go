@@ -2,6 +2,7 @@ package interpreter
 
 import (
 	"errors"
+	"fmt"
 	"go-boli/internal/frontend"
 )
 
@@ -20,6 +21,10 @@ func NewBuiltinFunc(name string, fn func([]ValueObject) (ValueObject, error)) *B
 
 func (b *BuiltinFunc) GetValueType() ValueType {
 	return ValueBuiltinFunc
+}
+
+func (b *BuiltinFunc) String() string {
+	return fmt.Sprintf("<builtin function %s>", b.name)
 }
 
 func (b *BuiltinFunc) Call(args []ValueObject) (ValueObject, error) {
@@ -44,6 +49,14 @@ func NewLambdaFunc(name string, params []string, body *frontend.AST, env *Enviro
 
 func (l *LambdaFunc) GetValueType() ValueType {
 	return ValueLambda
+}
+
+func (l *LambdaFunc) String() string {
+	if len(l.name) == 0 {
+		return "<lambda function>"
+	} else {
+		return fmt.Sprintf("<lambda function %s>", l.name)
+	}
 }
 
 func (l *LambdaFunc) Call(args []ValueObject) (ValueObject, error) {
@@ -80,4 +93,8 @@ func NewTailCall(callable Callable, args []ValueObject) *TailCall {
 
 func (tc *TailCall) GetValueType() ValueType {
 	return ValueTailCall
+}
+
+func (tc *TailCall) String() string {
+	return "<tail call>"
 }

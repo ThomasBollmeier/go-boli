@@ -22,6 +22,7 @@ const (
 	TokSlash
 	TokCaret
 	TokPercentage
+	TokDot
 	TokEqual
 	TokGreater
 	TokGreaterEq
@@ -48,6 +49,7 @@ var SingleCharTokens = map[rune]TokenType{
 	'/': TokSlash,
 	'^': TokCaret,
 	'%': TokPercentage,
+	'.': TokDot,
 	'λ': TokLambda,
 }
 

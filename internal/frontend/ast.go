@@ -17,6 +17,7 @@ const (
 	AstComparisonOp AstType = "ComparisonOp"
 	AstDisjunction  AstType = "Disjunction"
 	AstConjunction  AstType = "Conjunction"
+	AstPair         AstType = "Pair"
 	AstDefinition   AstType = "Definition"
 	AstIfExpression AstType = "IfExpression"
 	AstBlock        AstType = "Block"

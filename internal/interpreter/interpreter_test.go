@@ -360,6 +360,59 @@ func TestRun(t *testing.T) {
 			},
 			want: &Integer{45},
 		},
+		{
+			name: "evaluate pair",
+			args: args{
+				code: `
+					(1 . (2 . nil))`,
+			},
+			want: &Pair{
+				first: &Integer{1},
+				second: &Pair{
+					first:  &Integer{2},
+					second: &NilObject{},
+				},
+			},
+		},
+		{
+			name: "evaluate car",
+			args: args{
+				code: `
+					(def pair (1 . (2 . nil)))
+					(car pair)`,
+			},
+			want: &Integer{1},
+		},
+		{
+			name: "evaluate cdr",
+			args: args{
+				code: `
+					(def pair (1 . (2 . nil)))
+					(cdr pair)`,
+			},
+			want: &Pair{
+				first:  &Integer{2},
+				second: &NilObject{},
+			},
+		},
+		{
+			name: "this pair is a list",
+			args: args{
+				code: `
+					(def pair (1 . (2 . nil)))
+					(list? pair)`,
+			},
+			want: &Boolean{true},
+		},
+		{
+			name: "this pair is not a list",
+			args: args{
+				code: `
+					(def pair (1 . 2))
+					(list? pair)`,
+			},
+			want: &Boolean{false},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

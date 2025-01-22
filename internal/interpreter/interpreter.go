@@ -43,6 +43,10 @@ func newGlobalEnv() *Environment {
 		}))
 	}
 
+	ret.Set("car", NewBuiltinFunc("car", car))
+	ret.Set("cdr", NewBuiltinFunc("cdr", cdr))
+	ret.Set("list?", NewBuiltinFunc("list?", isList))
+
 	return ret
 }
 
@@ -92,6 +96,8 @@ func (interpreter *Interpreter) Eval(ast *frontend.AST) (ValueObject, error) {
 		return interpreter.evalDisjunction(ast)
 	case frontend.AstCall:
 		return interpreter.evalCall(ast)
+	case frontend.AstPair:
+		return interpreter.evalPair(ast)
 	default:
 		return nil, errors.New("not implemented")
 	}
@@ -148,6 +154,23 @@ func (interpreter *Interpreter) evalCall(call *frontend.AST) (ValueObject, error
 			return ret, nil
 		}
 	}
+}
+
+func (interpreter *Interpreter) evalPair(pair *frontend.AST) (ValueObject, error) {
+	var first, second ValueObject
+	var err error
+
+	children := pair.GetChildren()
+	first, err = interpreter.Eval(children[0])
+	if err != nil {
+		return nil, err
+	}
+	second, err = interpreter.Eval(children[1])
+	if err != nil {
+		return nil, err
+	}
+
+	return NewPair(first, second), nil
 }
 
 func (interpreter *Interpreter) evalOperator(op *frontend.AST) (ValueObject, error) {

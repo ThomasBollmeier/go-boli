@@ -152,21 +152,30 @@ func (p *Parser) parseLogicalOp(start *Token) (*AST, error) {
 }
 
 func (p *Parser) parseCall(start *Token) (*AST, error) {
-	var calleeAst, argAst *AST
+	var first, argAst *AST
 	var token *Token
 	var err error
 
-	callee, err := p.scanner.Advance()
+	firstToken, err := p.scanner.Advance()
 	if err != nil {
 		return nil, err
 	}
-	calleeAst, err = p.parseExpr(callee)
+	first, err = p.parseExpr(firstToken)
+
+	token, err = p.scanner.Peek()
+	if err != nil {
+		return nil, err
+	}
+
+	if token.Type == TokDot {
+		return p.parsePair(start, first)
+	}
+
+	closingType := OpeningClosingPairs[start.Type]
 
 	callAst := NewAST(AstCall, "")
 	callAst.AddToken(start)
-	callAst.AddChild(calleeAst)
-
-	closingType := OpeningClosingPairs[start.Type]
+	callAst.AddChild(first)
 
 	for {
 		token, err = p.scanner.Advance()
@@ -185,6 +194,38 @@ func (p *Parser) parseCall(start *Token) (*AST, error) {
 	}
 
 	return callAst, nil
+}
+
+func (p *Parser) parsePair(start *Token, first *AST) (*AST, error) {
+	var err error
+	var dot, end *Token
+	var second *AST
+
+	endType := OpeningClosingPairs[start.Type]
+
+	dot, err = p.expect(TokDot)
+	if err != nil {
+		return nil, err
+	}
+
+	second, err = p.parseExpr(nil)
+	if err != nil {
+		return nil, err
+	}
+
+	end, err = p.expect(endType)
+	if err != nil {
+		return nil, err
+	}
+
+	ret := NewAST(AstPair, "")
+	ret.AddToken(start)
+	ret.AddChild(first)
+	ret.AddToken(dot)
+	ret.AddChild(second)
+	ret.AddToken(end)
+
+	return ret, nil
 }
 
 func (p *Parser) parseDefinition(start *Token) (*AST, error) {

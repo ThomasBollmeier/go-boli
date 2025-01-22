@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"strings"
 )
 
 type NilObject struct{}
@@ -18,6 +19,10 @@ func (n *NilObject) GetValueType() ValueType {
 	return ValueNil
 }
 
+func (n *NilObject) String() string {
+	return "nil"
+}
+
 type Boolean struct {
 	Value bool
 }
@@ -30,6 +35,14 @@ func (b *Boolean) GetValueType() ValueType {
 	return ValueBoolean
 }
 
+func (b *Boolean) String() string {
+	if b.Value {
+		return "#true"
+	} else {
+		return "#false"
+	}
+}
+
 type Integer struct {
 	Value int
 }
@@ -40,6 +53,10 @@ func NewInteger(value int) *Integer {
 
 func (i *Integer) GetValueType() ValueType {
 	return ValueInteger
+}
+
+func (i *Integer) String() string {
+	return fmt.Sprintf("%d", i.Value)
 }
 
 func (i *Integer) ToRational() ValueObject {
@@ -111,10 +128,6 @@ func (i *Integer) LessThanOrEqual(other *Integer) bool {
 	return i.Value <= other.Value
 }
 
-func (i *Integer) String() string {
-	return fmt.Sprintf("Integer(%d)", i.Value)
-}
-
 type Rational struct {
 	Numerator   int
 	Denominator int
@@ -129,6 +142,10 @@ func NewRational(numerator, denominator int) *Rational {
 
 func (r *Rational) GetValueType() ValueType {
 	return ValueRational
+}
+
+func (r *Rational) String() string {
+	return fmt.Sprintf("%d/%d", r.Numerator, r.Denominator)
 }
 
 func (r *Rational) ToReal() *Real {
@@ -182,10 +199,6 @@ func (r *Rational) LessThanOrEqual(other *Rational) bool {
 	return r.Numerator*other.Denominator <= r.Numerator*r.Denominator
 }
 
-func (r *Rational) String() string {
-	return fmt.Sprintf("Rational(%d/%d)", r.Numerator, r.Denominator)
-}
-
 type Real struct {
 	Value float64
 }
@@ -196,6 +209,10 @@ func NewReal(value float64) *Real {
 
 func (r *Real) GetValueType() ValueType {
 	return ValueReal
+}
+
+func (r *Real) String() string {
+	return strings.Replace(fmt.Sprintf("%f", r.Value), ".", ",", -1)
 }
 
 func (r *Real) Add(other *Real) ValueObject {
@@ -242,10 +259,6 @@ func (r *Real) LessThanOrEqual(other *Real) bool {
 	return r.Value <= other.Value
 }
 
-func (r *Real) String() string {
-	return fmt.Sprintf("Real(%f)", r.Value)
-}
-
 type Str struct {
 	Value string
 }
@@ -256,6 +269,10 @@ func NewStr(value string) *Str {
 
 func (s *Str) GetValueType() ValueType {
 	return ValueString
+}
+
+func (s *Str) String() string {
+	return "\"" + s.Value + "\""
 }
 
 // Helper functions

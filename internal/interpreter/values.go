@@ -1,5 +1,7 @@
 package interpreter
 
+import "fmt"
+
 type ValueType int
 
 const (
@@ -12,9 +14,11 @@ const (
 	ValueBuiltinFunc
 	ValueLambda
 	ValueTailCall
+	ValuePair
 	ValueInvalid
 )
 
 type ValueObject interface {
+	fmt.Stringer
 	GetValueType() ValueType
 }

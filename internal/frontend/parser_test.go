@@ -139,6 +139,13 @@ func TestParser_ParseExpression(t *testing.T) {
 			wantType:  AstDefinition,
 			wantValue: "fib",
 		},
+		{
+			name: "Parse pair",
+			code: `
+				(a . (b . nil))`,
+			wantType:  AstPair,
+			wantValue: "",
+		},
 	}
 
 	for _, test := range tests {
