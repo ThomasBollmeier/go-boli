@@ -31,6 +31,7 @@ const (
 	TokAnd
 	TokOr
 	TokDef
+	TokSetBang
 	TokIf
 	TokCond
 	TokBlock
@@ -73,6 +74,7 @@ var Keywords = map[string]TokenType{
 	"and":    TokAnd,
 	"or":     TokOr,
 	"lambda": TokLambda,
+	"set!":   TokSetBang,
 }
 
 type Token struct {

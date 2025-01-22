@@ -49,6 +49,14 @@ func newGlobalEnv() *Environment {
 	ret.Set("list?", NewBuiltinFunc("list?", isList))
 	ret.Set("cons", NewBuiltinFunc("cons", cons))
 
+	ret.Set("displayln", NewBuiltinFunc("displayln", func(objects []ValueObject) (ValueObject, error) {
+		if len(objects) != 1 {
+			return nil, fmt.Errorf("expected single arg, got %d", len(objects))
+		}
+		fmt.Println(objects[0])
+		return GetNilObject(), nil
+	}))
+
 	return ret
 }
 
@@ -68,6 +76,8 @@ func (interpreter *Interpreter) Eval(ast *frontend.AST) (ValueObject, error) {
 		return interpreter.evalProgram(ast)
 	case frontend.AstDefinition:
 		return interpreter.evalDefinition(ast)
+	case frontend.AstVarChange:
+		return interpreter.evalVarChange(ast)
 	case frontend.AstIfExpression:
 		return interpreter.evalIfExpression(ast)
 	case frontend.AstLambda:
@@ -244,6 +254,24 @@ func (interpreter *Interpreter) evalDefinition(def *frontend.AST) (ValueObject, 
 		return nil, err
 	}
 	interpreter.env.Set(name, value)
+
+	return GetNilObject(), nil
+}
+
+func (interpreter *Interpreter) evalVarChange(change *frontend.AST) (ValueObject, error) {
+	name := change.GetValue()
+	definingEnv := interpreter.env.GetDefiningEnv(name)
+	if definingEnv == nil {
+		return nil, errors.New(fmt.Sprintf("variable '%s' is not defined", name))
+	}
+
+	valueAst := change.GetChildren()[0]
+	newValue, err := interpreter.Eval(valueAst)
+	if err != nil {
+		return nil, err
+	}
+
+	definingEnv.Set(name, newValue)
 
 	return GetNilObject(), nil
 }

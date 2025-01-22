@@ -216,6 +216,16 @@ func TestRun(t *testing.T) {
 			want: &Integer{42},
 		},
 		{
+			name: "value can be changed",
+			args: args{
+				code: `
+					(def answer 41)
+  					(set! answer 42)
+					answer`,
+			},
+			want: &Integer{42},
+		},
+		{
 			name: "evaluate equal",
 			args: args{
 				code: `

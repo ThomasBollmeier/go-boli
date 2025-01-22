@@ -19,6 +19,7 @@ const (
 	AstConjunction  AstType = "Conjunction"
 	AstPair         AstType = "Pair"
 	AstDefinition   AstType = "Definition"
+	AstVarChange    AstType = "VarChange"
 	AstIfExpression AstType = "IfExpression"
 	AstBlock        AstType = "Block"
 	AstProgram      AstType = "Program"

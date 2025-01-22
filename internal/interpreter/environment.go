@@ -23,6 +23,17 @@ func (env *Environment) Get(name string) (ValueObject, bool) {
 	return env.parent.Get(name)
 }
 
+func (env *Environment) GetDefiningEnv(name string) *Environment {
+	_, ok := env.values[name]
+	if ok {
+		return env
+	}
+	if env.parent == nil {
+		return nil
+	}
+	return env.parent.GetDefiningEnv(name)
+}
+
 func (env *Environment) Set(name string, value ValueObject) {
 	env.values[name] = value
 }

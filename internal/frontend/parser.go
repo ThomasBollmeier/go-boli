@@ -50,6 +50,8 @@ func (p *Parser) parseDefOrExpr(token *Token) (*AST, error) {
 		switch nextToken.Type {
 		case TokDef:
 			return p.parseDefinition(token)
+		case TokSetBang:
+			return p.parseVarChange(token)
 		default:
 			return p.parseExpr(token)
 		}
@@ -265,6 +267,44 @@ func (p *Parser) parseDefinition(start *Token) (*AST, error) {
 	ret.AddToken(tokenDef)
 	ret.AddToken(identifier)
 	ret.AddChild(value)
+	ret.AddToken(end)
+
+	return ret, nil
+}
+
+func (p *Parser) parseVarChange(start *Token) (*AST, error) {
+	var setBang, identifier *Token
+	var err error
+
+	closingType := OpeningClosingPairs[start.Type]
+
+	setBang, err = p.expect(TokSetBang) // scan def keyword
+	if err != nil {
+		return nil, err
+	}
+
+	identifier, err = p.expect(TokIdentifier)
+	if err != nil {
+		return nil, err
+	}
+
+	ret := NewAST(AstVarChange, identifier.Lexeme)
+	ret.AddToken(start)
+	ret.AddToken(setBang)
+	ret.AddToken(identifier)
+
+	var value *AST
+	value, err = p.parseExpr(nil)
+	if err != nil {
+		return nil, err
+	}
+	ret.AddChild(value)
+
+	var end *Token
+	end, err = p.expect(closingType)
+	if err != nil {
+		return nil, err
+	}
 	ret.AddToken(end)
 
 	return ret, nil

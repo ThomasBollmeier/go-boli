@@ -146,6 +146,13 @@ func TestParser_ParseExpression(t *testing.T) {
 			wantType:  AstPair,
 			wantValue: "",
 		},
+		{
+			name: "Parse set!",
+			code: `
+				(set! answer 42)`,
+			wantType:  AstVarChange,
+			wantValue: "answer",
+		},
 	}
 
 	for _, test := range tests {
