@@ -19,7 +19,36 @@ func (p *Pair) GetValueType() ValueType {
 }
 
 func (p *Pair) String() string {
-	return fmt.Sprintf("( %s . %s )", p.first, p.second)
+
+	if b := p.IsList(); b.Value {
+		var curr ValueObject
+		ret := "'("
+		curr = p
+		first := true
+	listLoop:
+		for {
+			switch curr.GetValueType() {
+			case ValuePair:
+				pair := curr.(*Pair)
+				if !first {
+					ret += " "
+				} else {
+					first = false
+				}
+				ret += fmt.Sprintf("%s", pair.first)
+				curr = pair.second
+			case ValueNil:
+				ret += ")"
+				break listLoop
+			default:
+				panic("unexpected value type")
+			}
+		}
+
+		return ret
+	}
+
+	return fmt.Sprintf("'(%s . %s)", p.first, p.second)
 }
 
 func (p *Pair) Car() ValueObject {
@@ -46,7 +75,7 @@ func (p *Pair) IsList() *Boolean {
 
 func car(values []ValueObject) (ValueObject, error) {
 	if len(values) != 1 {
-		return nil, fmt.Errorf("expected single value, got %d", len(values))
+		return nil, fmt.Errorf("expected single arg, got %d", len(values))
 	}
 
 	value := values[0]
@@ -61,7 +90,7 @@ func car(values []ValueObject) (ValueObject, error) {
 
 func cdr(values []ValueObject) (ValueObject, error) {
 	if len(values) != 1 {
-		return nil, fmt.Errorf("expected single value, got %d", len(values))
+		return nil, fmt.Errorf("expected single arg, got %d", len(values))
 	}
 
 	value := values[0]
@@ -74,16 +103,43 @@ func cdr(values []ValueObject) (ValueObject, error) {
 	}
 }
 
+func isPair(values []ValueObject) (ValueObject, error) {
+	if len(values) != 1 {
+		return nil, fmt.Errorf("expected single arg, got %d", len(values))
+	}
+
+	value := values[0]
+	switch value.GetValueType() {
+	case ValuePair:
+		return NewBoolean(true), nil
+	default:
+
+		return NewBoolean(false), nil
+	}
+}
+
 func isList(values []ValueObject) (ValueObject, error) {
 	if len(values) != 1 {
-		return nil, fmt.Errorf("expected single value, got %d", len(values))
+		return nil, fmt.Errorf("expected single arg, got %d", len(values))
 	}
 
 	value := values[0]
 	switch value.GetValueType() {
 	case ValuePair:
 		return value.(*Pair).IsList(), nil
+	case ValueNil:
+		return NewBoolean(true), nil
 	default:
 		return NewBoolean(false), nil
 	}
+}
+
+func cons(values []ValueObject) (ValueObject, error) {
+	if len(values) != 2 {
+		return nil, fmt.Errorf("expected two args, got %d", len(values))
+	}
+
+	a := values[0]
+	b := values[1]
+	return NewPair(a, b), nil
 }

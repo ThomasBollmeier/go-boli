@@ -413,6 +413,15 @@ func TestRun(t *testing.T) {
 			},
 			want: &Boolean{false},
 		},
+		{
+			name: "cons works",
+			args: args{
+				code: `
+					(def pair (cons 1 2))
+					(pair? pair)`,
+			},
+			want: &Boolean{true},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

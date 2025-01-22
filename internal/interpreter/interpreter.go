@@ -45,7 +45,9 @@ func newGlobalEnv() *Environment {
 
 	ret.Set("car", NewBuiltinFunc("car", car))
 	ret.Set("cdr", NewBuiltinFunc("cdr", cdr))
+	ret.Set("pair?", NewBuiltinFunc("pair?", isPair))
 	ret.Set("list?", NewBuiltinFunc("list?", isList))
+	ret.Set("cons", NewBuiltinFunc("cons", cons))
 
 	return ret
 }
