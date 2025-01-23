@@ -12,6 +12,8 @@ const (
 	AstVariable     AstType = "Variable"
 	AstLambda       AstType = "Lambda"
 	AstParameters   AstType = "Parameters"
+	AstVarParam     AstType = "VarParam"
+	AstSpread       AstType = "Spread"
 	AstCall         AstType = "Call"
 	AstOperator     AstType = "Operator"
 	AstComparisonOp AstType = "ComparisonOp"

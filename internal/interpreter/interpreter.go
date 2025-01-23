@@ -134,11 +134,20 @@ func (interpreter *Interpreter) evalCall(call *frontend.AST) (ValueObject, error
 
 	var arguments []ValueObject
 	for _, child := range children[1:] {
-		argument, childErr := interpreter.Eval(child)
-		if childErr != nil {
-			return nil, childErr
+		switch child.GetType() {
+		case frontend.AstSpread:
+			spreadArgs, spreadErr := interpreter.evalSpread(child)
+			if spreadErr != nil {
+				return nil, spreadErr
+			}
+			arguments = append(arguments, spreadArgs...)
+		default:
+			argument, childErr := interpreter.Eval(child)
+			if childErr != nil {
+				return nil, childErr
+			}
+			arguments = append(arguments, argument)
 		}
-		arguments = append(arguments, argument)
 	}
 
 	isTailCall := false
@@ -294,12 +303,19 @@ func (interpreter *Interpreter) evalLambda(lambda *frontend.AST) (ValueObject, e
 	name := lambda.GetValue()
 	children := lambda.GetChildren()
 	var params []string
+	var varParam = ""
+
 	for _, p := range children[0].GetChildren() {
-		params = append(params, p.GetValue())
+		if p.GetType() == frontend.AstVariable {
+			params = append(params, p.GetValue())
+		} else {
+			varParam = p.GetValue()
+			varParam = varParam[:len(varParam)-3]
+		}
 	}
 	body := children[1]
 
-	return NewLambdaFunc(name, params, body, interpreter.env), nil
+	return NewLambdaFunc(name, params, varParam, body, interpreter.env), nil
 }
 
 func (interpreter *Interpreter) evalBlock(block *frontend.AST) (ValueObject, error) {
@@ -328,6 +344,19 @@ func (interpreter *Interpreter) evalVariable(variable *frontend.AST) (ValueObjec
 		return nil, errors.New(fmt.Sprintf("variable '%s' is not defined", varName))
 	}
 	return value, nil
+}
+
+func (interpreter *Interpreter) evalSpread(spread *frontend.AST) ([]ValueObject, error) {
+	varName := spread.GetValue()[3:]
+	value, ok := interpreter.env.Get(varName)
+	if !ok {
+		return nil, errors.New(fmt.Sprintf("variable '%s' is not defined", varName))
+	}
+	if value.GetValueType() != ValueVector {
+		return nil, errors.New(fmt.Sprintf("variable '%s' is not vector", varName))
+	}
+
+	return value.(*Vector).GetElements(), nil
 }
 
 func (interpreter *Interpreter) evalNil() (ValueObject, error) {

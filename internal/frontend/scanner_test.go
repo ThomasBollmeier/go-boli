@@ -135,6 +135,20 @@ func TestScanner_Advance(t *testing.T) {
 			},
 			want: NewToken(TokOr, "or", 1, 1),
 		},
+		{
+			name: "Get spread",
+			fields: fields{
+				stream: *NewBufferedStream(NewCharStreamString("...xs")),
+			},
+			want: NewToken(TokSpread, "...xs", 1, 1),
+		},
+		{
+			name: "Get var parameter",
+			fields: fields{
+				stream: *NewBufferedStream(NewCharStreamString("xs...")),
+			},
+			want: NewToken(TokVarParam, "xs...", 1, 1),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

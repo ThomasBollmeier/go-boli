@@ -153,6 +153,31 @@ func TestParser_ParseExpression(t *testing.T) {
 			wantType:  AstVarChange,
 			wantValue: "answer",
 		},
+		{
+			name: "Parse set!",
+			code: `
+				(set! answer 42)`,
+			wantType:  AstVarChange,
+			wantValue: "answer",
+		},
+		{
+			name: "Parse varargs",
+			code: `
+				(def (my-add xs...)
+					(+ ...xs))
+				(my-add 1 2 3 4)`,
+			wantType:  AstDefinition,
+			wantValue: "my-add",
+		},
+		{
+			name: "Parse varargs 2",
+			code: `
+				(def my-add (λ (xs...)
+					(+ ...xs)))
+				(my-add 1 2 3 4)`,
+			wantType:  AstDefinition,
+			wantValue: "my-add",
+		},
 	}
 
 	for _, test := range tests {

@@ -66,6 +66,29 @@ func (s *Scanner) Advance() (*Token, error) {
 		} else {
 			return NewToken(TokLess, string(ch), row, col), nil
 		}
+	case '.':
+		nextChars := s.inStream.PeekMany(3)
+		if len(nextChars) == 3 &&
+			nextChars[0] == '.' &&
+			nextChars[1] == '.' &&
+			s.isValidFirstIdentChar(nextChars[2]) {
+
+			for i := 0; i < 3; i++ {
+				_, _ = s.advanceChar()
+			}
+
+			var ident *Token
+			ident, err = s.scanIdentifier(nextChars[2], row, col)
+			if err != nil {
+				return nil, err
+			}
+			if ident.Type != TokIdentifier {
+				return nil, errors.New("spread expects identifier")
+			}
+			return NewToken(TokSpread, "..."+ident.Lexeme, row, col), nil
+		} else {
+			return NewToken(TokDot, ".", row, col), nil
+		}
 	}
 
 	if unicode.IsDigit(ch) {
@@ -103,11 +126,20 @@ func (s *Scanner) scanIdentifier(ch rune, row, col int) (*Token, error) {
 	}
 
 	tokenType, ok := Keywords[lexeme]
-	if !ok {
-		tokenType = TokIdentifier
+	if ok {
+		return NewToken(tokenType, lexeme, row, col), nil
 	}
 
-	return NewToken(tokenType, lexeme, row, col), nil
+	nextChars := s.inStream.PeekMany(3)
+	if string(nextChars) == "..." {
+		for i := 0; i < 3; i++ {
+			_, _ = s.advanceChar()
+		}
+		lexeme += "..."
+		return NewToken(TokVarParam, lexeme, row, col), nil
+	}
+
+	return NewToken(TokIdentifier, lexeme, row, col), nil
 }
 
 func (s *Scanner) isValidFirstIdentChar(ch rune) bool {
@@ -124,7 +156,7 @@ func (s *Scanner) isValidIdentChar(ch rune) bool {
 	if unicode.IsSpace(ch) {
 		return false
 	}
-	invalidChars := []rune{'(', ')', '{', '}', '[', ']', ':'}
+	invalidChars := []rune{'(', ')', '{', '}', '[', ']', ':', '.'}
 	for _, invalidChar := range invalidChars {
 		if ch == invalidChar {
 			return false

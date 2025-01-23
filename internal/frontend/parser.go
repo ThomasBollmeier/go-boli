@@ -6,7 +6,8 @@ import (
 )
 
 type Parser struct {
-	scanner *BufferedStream[*Token]
+	scanner         *BufferedStream[*Token]
+	callArgsNesting int
 }
 
 func NewParser() *Parser {
@@ -106,6 +107,12 @@ func (p *Parser) parseExpr(token *Token) (*AST, error) {
 		return NewASTAtom(AstOperator, token), nil
 	case TokEqual, TokGreater, TokGreaterEq, TokLess, TokLessEq:
 		return NewASTAtom(AstComparisonOp, token), nil
+	case TokSpread:
+		if p.callArgsNesting > 0 {
+			return NewASTAtom(AstSpread, token), nil
+		} else {
+			return nil, errors.New("spreads are only allowed as call args")
+		}
 	default:
 		return nil, errors.New("unknown expression")
 	}
@@ -179,9 +186,12 @@ func (p *Parser) parseCall(start *Token) (*AST, error) {
 	callAst.AddToken(start)
 	callAst.AddChild(first)
 
+	p.callArgsNesting++
+
 	for {
 		token, err = p.scanner.Advance()
 		if err != nil {
+			p.callArgsNesting--
 			return nil, err
 		}
 		if token.Type == closingType {
@@ -190,10 +200,13 @@ func (p *Parser) parseCall(start *Token) (*AST, error) {
 		}
 		argAst, err = p.parseExpr(token)
 		if err != nil {
+			p.callArgsNesting--
 			return nil, err
 		}
 		callAst.AddChild(argAst)
 	}
+
+	p.callArgsNesting--
 
 	return callAst, nil
 }
@@ -332,15 +345,19 @@ func (p *Parser) parseFuncDef(start, tokenDef, startFunc *Token) (*AST, error) {
 
 	params := NewAST(AstParameters, "")
 	var token, tokenEndParams *Token
+	expectedTypes := []TokenType{TokVarParam, TokIdentifier, endFuncType}
 paramsLoop:
 	for {
-		token, err = p.scanner.Advance()
+		token, err = p.expect(expectedTypes...)
 		if err != nil {
 			return nil, err
 		}
 		switch token.Type {
 		case TokIdentifier:
 			params.AddChild(NewASTAtom(AstVariable, token))
+		case TokVarParam:
+			params.AddChild(NewASTAtom(AstVarParam, token))
+			expectedTypes = expectedTypes[1:] // var param must be the last param
 		case endFuncType:
 			tokenEndParams = token
 			break paramsLoop
@@ -657,15 +674,19 @@ func (p *Parser) parseLambda(start *Token) (*AST, error) {
 	endParamsType := OpeningClosingPairs[token.Type]
 
 	var tokenEndParams *Token
+	expectedTypes := []TokenType{TokVarParam, TokIdentifier, endParamsType}
 paramsLoop:
 	for {
-		token, err = p.scanner.Advance()
+		token, err = p.expect(expectedTypes...)
 		if err != nil {
 			return nil, err
 		}
 		switch token.Type {
 		case TokIdentifier:
 			params.AddChild(NewASTAtom(AstVariable, token))
+		case TokVarParam:
+			params.AddChild(NewASTAtom(AstVarParam, token))
+			expectedTypes = expectedTypes[1:]
 		case endParamsType:
 			tokenEndParams = token
 			break paramsLoop

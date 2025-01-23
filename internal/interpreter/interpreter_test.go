@@ -371,6 +371,16 @@ func TestRun(t *testing.T) {
 			want: &Integer{45},
 		},
 		{
+			name: "evaluate varargs",
+			args: args{
+				code: `
+					(def (my-add one two many...)
+						(+ one two ...many))
+					(my-add 1 2 3 4)`,
+			},
+			want: &Integer{10},
+		},
+		{
 			name: "evaluate pair",
 			args: args{
 				code: `

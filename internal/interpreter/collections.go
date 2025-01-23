@@ -1,6 +1,8 @@
 package interpreter
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Pair struct {
 	first  ValueObject
@@ -71,6 +73,39 @@ func (p *Pair) IsList() *Boolean {
 			return NewBoolean(false)
 		}
 	}
+}
+
+type Vector struct {
+	elements []ValueObject
+}
+
+func NewVector(elements []ValueObject) *Vector {
+	return &Vector{
+		elements: elements,
+	}
+}
+
+func (v *Vector) GetValueType() ValueType {
+	return ValueVector
+}
+
+func (v *Vector) String() string {
+	elementsStr := ""
+	for i, el := range v.elements {
+		if i > 0 {
+			elementsStr += " "
+		}
+		elementsStr += el.String()
+	}
+	return fmt.Sprintf("(vector %s)", elementsStr)
+}
+
+func (v *Vector) Append(element ValueObject) {
+	v.elements = append(v.elements, element)
+}
+
+func (v *Vector) GetElements() []ValueObject {
+	return v.elements
 }
 
 func car(values []ValueObject) (ValueObject, error) {

@@ -32,16 +32,24 @@ func (b *BuiltinFunc) Call(args []ValueObject) (ValueObject, error) {
 }
 
 type LambdaFunc struct {
-	name   string
-	params []string
-	body   *frontend.AST
-	env    *Environment
+	name     string
+	params   []string
+	varParam string
+	body     *frontend.AST
+	env      *Environment
 }
 
-func NewLambdaFunc(name string, params []string, body *frontend.AST, env *Environment) *LambdaFunc {
+func NewLambdaFunc(
+	name string,
+	params []string,
+	varParam string,
+	body *frontend.AST,
+	env *Environment) *LambdaFunc {
+
 	return &LambdaFunc{
 		name,
 		params,
+		varParam,
 		body,
 		env,
 	}
@@ -60,15 +68,30 @@ func (l *LambdaFunc) String() string {
 }
 
 func (l *LambdaFunc) Call(args []ValueObject) (ValueObject, error) {
-	if len(args) != len(l.params) {
-		return nil, errors.New("invalid number of arguments")
+	numArgs := len(args)
+	numParams := len(l.params)
+
+	if numArgs < numParams {
+		return nil, errors.New("too few arguments given")
+	} else if numArgs > numParams && l.varParam == "" {
+		return nil, errors.New("too many arguments given")
 	}
+
 	interpreter := NewInterpreter(l.env)
 	interpreter.beginBlockScope()
 
 	env := interpreter.env
+
 	for i, param := range l.params {
 		env.Set(param, args[i])
+	}
+
+	if l.varParam != "" {
+		varArgs := NewVector(nil)
+		for i := numParams; i < numArgs; i++ {
+			varArgs.Append(args[i])
+		}
+		env.Set(l.varParam, varArgs)
 	}
 
 	ret, err := interpreter.evalBlock(l.body)

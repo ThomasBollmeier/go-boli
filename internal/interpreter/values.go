@@ -15,6 +15,7 @@ const (
 	ValueLambda
 	ValueTailCall
 	ValuePair
+	ValueVector
 	ValueInvalid
 )
 
