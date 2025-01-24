@@ -193,6 +193,38 @@ func TestScanner_AdvanceComparisonOperators(t *testing.T) {
 	)
 }
 
+func TestScanner_LineComment(t *testing.T) {
+	assertCode(
+		`; a line comment
+(def answer 42); <-- the answer to everything`,
+		[]*Token{
+			NewToken(TokLeftParen, "(", 2, 1),
+			NewToken(TokDef, "def", 2, 2),
+			NewToken(TokIdentifier, "answer", 2, 6),
+			NewToken(TokInteger, "42", 2, 13),
+			NewToken(TokRightParen, ")", 2, 15),
+		},
+		t,
+	)
+}
+
+func TestScanner_BlockComment(t *testing.T) {
+	assertCode(
+		`#| 
+This is a block comment 
+|#
+(def answer 42)`,
+		[]*Token{
+			NewToken(TokLeftParen, "(", 4, 1),
+			NewToken(TokDef, "def", 4, 2),
+			NewToken(TokIdentifier, "answer", 4, 6),
+			NewToken(TokInteger, "42", 4, 13),
+			NewToken(TokRightParen, ")", 4, 15),
+		},
+		t,
+	)
+}
+
 func assertCode(code string, expectedTokens []*Token, t *testing.T) {
 	stream := NewBufferedStream(NewCharStreamString(code))
 	scanner := NewScanner(stream)
@@ -201,6 +233,7 @@ func assertCode(code string, expectedTokens []*Token, t *testing.T) {
 
 	if len(actualTokens) != len(expectedTokens) {
 		t.Errorf("expected %d tokens, got %d", len(expectedTokens), len(actualTokens))
+		return
 	}
 
 	for i, actualToken := range actualTokens {

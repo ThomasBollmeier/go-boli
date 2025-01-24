@@ -20,14 +20,42 @@ func NewScanner(stream CharStream) *Scanner {
 }
 
 func (s *Scanner) Advance() (*Token, error) {
-	s.skipWhitespace()
+	var row, col int
+	var ch rune
+	var err error
 
-	row := s.row
-	col := s.col
+	for {
+		s.skipWhitespace()
 
-	ch, err := s.advanceChar()
-	if err != nil {
-		return nil, err
+		row = s.row
+		col = s.col
+
+		ch, err = s.advanceChar()
+		if err != nil {
+			return nil, err
+		}
+
+		if ch == ';' { // start of a line comment
+			err = s.skipLineComment()
+			if err != nil {
+				return nil, err
+			}
+			continue
+		}
+
+		if ch == '#' {
+			var nextChar rune
+			nextChar, err = s.inStream.Peek()
+			if err == nil && nextChar == '|' {
+				_, _ = s.Advance()
+				err = s.skipBlockComment()
+				if err != nil {
+					return nil, err
+				}
+				continue
+			}
+		}
+		break
 	}
 
 	tokType, ok := SingleCharTokens[ch]
@@ -156,7 +184,7 @@ func (s *Scanner) isValidIdentChar(ch rune) bool {
 	if unicode.IsSpace(ch) {
 		return false
 	}
-	invalidChars := []rune{'(', ')', '{', '}', '[', ']', ':', '.'}
+	invalidChars := []rune{'(', ')', '{', '}', '[', ']', ':', '.', ';'}
 	for _, invalidChar := range invalidChars {
 		if ch == invalidChar {
 			return false
@@ -263,5 +291,32 @@ func (s *Scanner) skipWhitespace() {
 			break
 		}
 		_, _ = s.advanceChar()
+	}
+}
+
+func (s *Scanner) skipLineComment() error {
+	for {
+		ch, err := s.advanceChar()
+		if err != nil {
+			return err
+		}
+		if string(ch) == "\n" {
+			return nil
+		}
+	}
+}
+
+func (s *Scanner) skipBlockComment() error {
+	for {
+		nextChars := string(s.inStream.PeekMany(2))
+		if nextChars == "|#" {
+			_, _ = s.advanceChar()
+			_, _ = s.advanceChar()
+			return nil
+		}
+		_, err := s.advanceChar()
+		if err != nil {
+			return err
+		}
 	}
 }

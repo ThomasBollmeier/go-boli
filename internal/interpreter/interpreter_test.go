@@ -376,9 +376,10 @@ func TestRun(t *testing.T) {
 				code: `
 					(def (my-add one two many...)
 						(+ one two ...many))
-					(my-add 1 2 3 4)`,
+					; (my-add 1 2 3 4) <-- ignored
+					(my-add 1 2 3 4 5)`,
 			},
-			want: &Integer{10},
+			want: &Integer{15},
 		},
 		{
 			name: "evaluate pair",
