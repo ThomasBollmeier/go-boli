@@ -396,6 +396,19 @@ func TestRun(t *testing.T) {
 			},
 		},
 		{
+			name: "evaluate list function",
+			args: args{
+				code: `(list 1 2)`,
+			},
+			want: &Pair{
+				first: &Integer{1},
+				second: &Pair{
+					first:  &Integer{2},
+					second: &NilObject{},
+				},
+			},
+		},
+		{
 			name: "evaluate car",
 			args: args{
 				code: `

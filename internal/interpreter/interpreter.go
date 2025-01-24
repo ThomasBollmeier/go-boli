@@ -48,6 +48,7 @@ func newGlobalEnv() *Environment {
 	ret.Set("pair?", NewBuiltinFunc("pair?", isPair))
 	ret.Set("list?", NewBuiltinFunc("list?", isList))
 	ret.Set("cons", NewBuiltinFunc("cons", cons))
+	ret.Set("list", NewBuiltinFunc("list", list))
 
 	ret.Set("displayln", NewBuiltinFunc("displayln", func(objects []ValueObject) (ValueObject, error) {
 		if len(objects) != 1 {

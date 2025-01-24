@@ -178,3 +178,13 @@ func cons(values []ValueObject) (ValueObject, error) {
 	b := values[1]
 	return NewPair(a, b), nil
 }
+
+func list(values []ValueObject) (ValueObject, error) {
+	ret := GetNilObject()
+
+	for i := len(values) - 1; i > -1; i-- {
+		ret = NewPair(values[i], ret)
+	}
+
+	return ret, nil
+}
