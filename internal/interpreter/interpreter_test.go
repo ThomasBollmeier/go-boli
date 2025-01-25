@@ -465,6 +465,24 @@ func TestRun(t *testing.T) {
 			},
 			want: &Integer{2},
 		},
+		{
+			name: "vector-ref works",
+			args: args{
+				code: `
+					(def v (vector 1 2 3))
+					(vector-ref v 1)`,
+			},
+			want: &Integer{2},
+		},
+		{
+			name: "vector? works",
+			args: args{
+				code: `
+					(def v (vector 1 2 3))
+					(vector? v)`,
+			},
+			want: &Boolean{true},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

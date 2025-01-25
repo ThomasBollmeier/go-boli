@@ -108,6 +108,46 @@ func (v *Vector) GetElements() []ValueObject {
 	return v.elements
 }
 
+func vector(values []ValueObject) (ValueObject, error) {
+	return NewVector(values), nil
+}
+
+func isVec(values []ValueObject) (ValueObject, error) {
+	if len(values) != 1 {
+		return nil, fmt.Errorf("expected single arg, got %d", len(values))
+	}
+
+	return NewBoolean(values[0].GetValueType() == ValueVector), nil
+}
+
+func vectorGetRef(values []ValueObject) (ValueObject, error) {
+	if len(values) != 2 {
+		return nil, fmt.Errorf("expected two args, got %d", len(values))
+	}
+	var v *Vector
+	first := values[0]
+	switch first.GetValueType() {
+	case ValueVector:
+		v = first.(*Vector)
+	default:
+		return nil, fmt.Errorf("vector list as first arg")
+	}
+	second := values[1]
+	if second.GetValueType() != ValueInteger {
+		return nil, fmt.Errorf("expected integer as second arg")
+	}
+	idx := second.(*Integer).Value
+	if idx < 0 {
+		return nil, fmt.Errorf("expected positive integer as second arg")
+	}
+
+	if idx >= len(v.elements) {
+		return nil, fmt.Errorf("invalid index")
+	}
+
+	return v.elements[idx], nil
+}
+
 func car(values []ValueObject) (ValueObject, error) {
 	if len(values) != 1 {
 		return nil, fmt.Errorf("expected single arg, got %d", len(values))

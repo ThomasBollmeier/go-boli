@@ -29,10 +29,13 @@ func NewGlobalEnv() *Environment {
 	ret.SetBuiltinFunc("car", car)
 	ret.SetBuiltinFunc("cdr", cdr)
 	ret.SetBuiltinFunc("pair?", isPair)
-	ret.SetBuiltinFunc("list?", isList)
 	ret.SetBuiltinFunc("cons", cons)
 	ret.SetBuiltinFunc("list", list)
+	ret.SetBuiltinFunc("list?", isList)
 	ret.SetBuiltinFunc("list-ref", listGetRef)
+	ret.SetBuiltinFunc("vector", vector)
+	ret.SetBuiltinFunc("vector?", isVec)
+	ret.SetBuiltinFunc("vector-ref", vectorGetRef)
 
 	ret.SetBuiltinFunc("displayln", func(objects []ValueObject) (ValueObject, error) {
 		if len(objects) != 1 {
