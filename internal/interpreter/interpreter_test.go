@@ -456,6 +456,15 @@ func TestRun(t *testing.T) {
 			},
 			want: &Boolean{true},
 		},
+		{
+			name: "list-ref works",
+			args: args{
+				code: `
+					(def lst (list 1 2 3))
+					(list-ref lst 1)`,
+			},
+			want: &Integer{2},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -21,7 +21,7 @@ type Interpreter struct {
 func NewInterpreter(env *Environment) *Interpreter {
 	if env == nil {
 		return &Interpreter{
-			env:    newGlobalEnv(),
+			env:    NewGlobalEnv(),
 			parser: frontend.NewParser(),
 		}
 	}
@@ -29,36 +29,6 @@ func NewInterpreter(env *Environment) *Interpreter {
 		env:    env,
 		parser: frontend.NewParser(),
 	}
-}
-
-func newGlobalEnv() *Environment {
-	ret := NewEnvironment(nil)
-	for _, op := range []string{"+", "-", "*", "/", "%"} {
-		ret.Set(op, NewBuiltinFunc(op, makeOperatorFn(op, true)))
-	}
-	ret.Set("^", NewBuiltinFunc("^", makeOperatorFn("^", false)))
-	for _, op := range []string{"=", ">", ">=", "<", "<="} {
-		ret.Set(op, NewBuiltinFunc(op, func(objects []ValueObject) (ValueObject, error) {
-			return compareNumbers(op, objects)
-		}))
-	}
-
-	ret.Set("car", NewBuiltinFunc("car", car))
-	ret.Set("cdr", NewBuiltinFunc("cdr", cdr))
-	ret.Set("pair?", NewBuiltinFunc("pair?", isPair))
-	ret.Set("list?", NewBuiltinFunc("list?", isList))
-	ret.Set("cons", NewBuiltinFunc("cons", cons))
-	ret.Set("list", NewBuiltinFunc("list", list))
-
-	ret.Set("displayln", NewBuiltinFunc("displayln", func(objects []ValueObject) (ValueObject, error) {
-		if len(objects) != 1 {
-			return nil, fmt.Errorf("expected single arg, got %d", len(objects))
-		}
-		fmt.Println(objects[0])
-		return GetNilObject(), nil
-	}))
-
-	return ret
 }
 
 func (interpreter *Interpreter) Run(code string) (ValueObject, error) {

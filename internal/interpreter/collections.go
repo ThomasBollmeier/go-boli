@@ -188,3 +188,40 @@ func list(values []ValueObject) (ValueObject, error) {
 
 	return ret, nil
 }
+
+func listGetRef(values []ValueObject) (ValueObject, error) {
+	if len(values) != 2 {
+		return nil, fmt.Errorf("expected two args, got %d", len(values))
+	}
+	var pair *Pair
+	lst := values[0]
+	switch lst.GetValueType() {
+	case ValuePair:
+		pair = lst.(*Pair)
+		if isAList := pair.IsList(); !isAList.Value {
+			return nil, fmt.Errorf("expected non empty list as first arg")
+		}
+	default:
+		return nil, fmt.Errorf("expected list as first arg")
+	}
+	idxVal := values[1]
+	if idxVal.GetValueType() != ValueInteger {
+		return nil, fmt.Errorf("expected integer as second arg")
+	}
+	idx := idxVal.(*Integer).Value
+	if idx < 0 {
+		return nil, fmt.Errorf("expected positive integer as second arg")
+	}
+
+	var curr ValueObject = pair
+	for idx > 0 {
+		p, ok := curr.(*Pair)
+		if !ok {
+			return nil, fmt.Errorf("invalid index")
+		}
+		curr = p.second
+		idx--
+	}
+
+	return curr.(*Pair).first, nil
+}
