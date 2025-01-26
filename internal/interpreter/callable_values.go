@@ -83,7 +83,7 @@ func (l *LambdaFunc) Call(args []ValueObject) (ValueObject, error) {
 	env := interpreter.env
 
 	for i, param := range l.params {
-		env.Set(param, args[i])
+		env.Set(param, args[i], true)
 	}
 
 	if l.varParam != "" {
@@ -91,7 +91,7 @@ func (l *LambdaFunc) Call(args []ValueObject) (ValueObject, error) {
 		for i := numParams; i < numArgs; i++ {
 			varArgs.Append(args[i])
 		}
-		env.Set(l.varParam, varArgs)
+		env.Set(l.varParam, varArgs, true)
 	}
 
 	ret, err := interpreter.evalBlock(l.body)

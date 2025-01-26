@@ -233,7 +233,7 @@ func (interpreter *Interpreter) evalDefinition(def *frontend.AST) (ValueObject, 
 	if err != nil {
 		return nil, err
 	}
-	interpreter.env.Set(name, value)
+	interpreter.env.Set(name, value, true)
 
 	return GetNilObject(), nil
 }
@@ -251,7 +251,7 @@ func (interpreter *Interpreter) evalVarChange(change *frontend.AST) (ValueObject
 		return nil, err
 	}
 
-	definingEnv.Set(name, newValue)
+	definingEnv.Set(name, newValue, true)
 
 	return GetNilObject(), nil
 }

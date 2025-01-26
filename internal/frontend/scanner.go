@@ -184,7 +184,7 @@ func (s *Scanner) isValidIdentChar(ch rune) bool {
 	if unicode.IsSpace(ch) {
 		return false
 	}
-	invalidChars := []rune{'(', ')', '{', '}', '[', ']', ':', '.', ';'}
+	invalidChars := []rune{'(', ')', '{', '}', '[', ']', '.', ';'}
 	for _, invalidChar := range invalidChars {
 		if ch == invalidChar {
 			return false
