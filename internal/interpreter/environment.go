@@ -1,10 +1,15 @@
 package interpreter
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 type Environment struct {
-	parent  *Environment
-	entries map[string]EnvEntry
+	parent         *Environment
+	entries        map[string]EnvEntry
+	sourceFactory  SourceFactory
+	providedValues map[string]string
 }
 
 type EnvEntry struct {
@@ -14,8 +19,10 @@ type EnvEntry struct {
 
 func NewEnvironment(parent *Environment) *Environment {
 	return &Environment{
-		parent:  parent,
-		entries: make(map[string]EnvEntry),
+		parent:         parent,
+		entries:        make(map[string]EnvEntry),
+		sourceFactory:  NewFileSourceFactory(),
+		providedValues: make(map[string]string),
 	}
 }
 
@@ -30,6 +37,12 @@ func NewGlobalEnv() *Environment {
 			return compareNumbers(op, objects)
 		})
 	}
+	ret.SetBuiltinFunc("not", func(objects []ValueObject) (ValueObject, error) {
+		if len(objects) != 1 {
+			return nil, errors.New("not requires exactly one argument")
+		}
+		return NewBoolean(!isTruthy(objects[0])), nil
+	})
 
 	ret.SetBuiltinFunc("car", car)
 	ret.SetBuiltinFunc("cdr", cdr)
@@ -56,6 +69,10 @@ func NewGlobalEnv() *Environment {
 		fmt.Println(objects[0])
 		return GetNilObject(), nil
 	})
+
+	// module handling:
+	ret.SetBuiltinFunc("require", makeRequireFn(ret))
+	ret.SetBuiltinFunc("provide", makeProvideFn(ret))
 
 	return ret
 }
@@ -91,4 +108,27 @@ func (env *Environment) Set(name string, value ValueObject, isOwned bool) {
 
 func (env *Environment) SetBuiltinFunc(name string, function func([]ValueObject) (ValueObject, error)) {
 	env.Set(name, NewBuiltinFunc(name, function), false)
+}
+
+func (env *Environment) GetProvidedValues() (map[string]ValueObject, error) {
+	ret := make(map[string]ValueObject)
+
+	if len(env.providedValues) == 0 {
+		for name, entry := range env.entries {
+			if entry.isOwned {
+				ret[name] = entry.value
+			}
+		}
+	} else {
+		for name, providedName := range env.providedValues {
+			value, ok := env.Get(name)
+			if ok {
+				ret[providedName] = value
+			} else {
+				return nil, fmt.Errorf("no value for %s", providedName)
+			}
+		}
+	}
+
+	return ret, nil
 }

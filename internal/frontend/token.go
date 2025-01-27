@@ -18,6 +18,7 @@ const (
 	TokReal
 	TokRational
 	TokString
+	TokSymbol
 	TokPlus
 	TokMinus
 	TokAsterisk

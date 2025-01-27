@@ -80,6 +80,8 @@ func (p *Parser) parseExpr(token *Token) (*AST, error) {
 		return NewASTNumber(token), nil
 	case TokString:
 		return NewASTAtom(AstString, token), nil
+	case TokSymbol:
+		return NewASTAtom(AstSymbol, token), nil
 	case TokIdentifier:
 		return NewASTAtom(AstVariable, token), nil
 	case TokLeftParen, TokLeftBracket, TokLeftBrace:

@@ -69,6 +69,8 @@ func (interpreter *Interpreter) Eval(ast *frontend.AST) (ValueObject, error) {
 		return interpreter.evalReal(ast)
 	case frontend.AstString:
 		return interpreter.evalString(ast)
+	case frontend.AstSymbol:
+		return interpreter.evalSymbol(ast)
 	case frontend.AstOperator:
 		return interpreter.evalOperator(ast)
 	case frontend.AstComparisonOp:
@@ -212,6 +214,10 @@ func (interpreter *Interpreter) evalString(str *frontend.AST) (ValueObject, erro
 	return NewStr(text), nil
 }
 
+func (interpreter *Interpreter) evalSymbol(symbol *frontend.AST) (ValueObject, error) {
+	return NewSymbol(symbol.GetValue()), nil
+}
+
 func (interpreter *Interpreter) evalProgram(program *frontend.AST) (ValueObject, error) {
 	var err error
 	ret := GetNilObject()
@@ -263,7 +269,7 @@ func (interpreter *Interpreter) evalIfExpression(ifExpr *frontend.AST) (ValueObj
 		return nil, err
 	}
 
-	if interpreter.isTruthy(condition) {
+	if isTruthy(condition) {
 		return interpreter.Eval(children[1])
 	} else {
 		return interpreter.Eval(children[2])
@@ -354,7 +360,7 @@ func (interpreter *Interpreter) evalConjunction(conj *frontend.AST) (ValueObject
 		if err != nil {
 			return nil, err
 		}
-		if !interpreter.isTruthy(ret) {
+		if !isTruthy(ret) {
 			return NewBoolean(false), nil
 		}
 	}
@@ -371,7 +377,7 @@ func (interpreter *Interpreter) evalDisjunction(disjunction *frontend.AST) (Valu
 		if err != nil {
 			return nil, err
 		}
-		if interpreter.isTruthy(ret) {
+		if isTruthy(ret) {
 			return ret, nil
 		}
 	}
@@ -379,7 +385,7 @@ func (interpreter *Interpreter) evalDisjunction(disjunction *frontend.AST) (Valu
 	return NewBoolean(false), nil
 }
 
-func (interpreter *Interpreter) isTruthy(value ValueObject) bool {
+func isTruthy(value ValueObject) bool {
 	switch value.GetValueType() {
 	case ValueNil:
 		return false

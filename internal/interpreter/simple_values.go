@@ -275,6 +275,22 @@ func (s *Str) String() string {
 	return "\"" + s.Value + "\""
 }
 
+type Symbol struct {
+	Value string
+}
+
+func NewSymbol(value string) *Symbol {
+	return &Symbol{Value: value}
+}
+
+func (s *Symbol) GetValueType() ValueType {
+	return ValueSymbol
+}
+
+func (s *Symbol) String() string {
+	return s.Value
+}
+
 // Helper functions
 
 func gcd(a, b int) int {

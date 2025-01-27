@@ -208,6 +208,13 @@ func TestRun(t *testing.T) {
 			want: &Str{"Thomas"},
 		},
 		{
+			name: "evaluate not",
+			args: args{
+				code: `(not nil)`,
+			},
+			want: &Boolean{true},
+		},
+		{
 			name: "evaluate definition",
 			args: args{
 				code: `(def answer 42)

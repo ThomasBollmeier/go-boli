@@ -9,6 +9,7 @@ const (
 	AstRational     AstType = "Rational"
 	AstReal         AstType = "Real"
 	AstString       AstType = "String"
+	AstSymbol       AstType = "Symbol"
 	AstVariable     AstType = "Variable"
 	AstLambda       AstType = "Lambda"
 	AstParameters   AstType = "Parameters"
