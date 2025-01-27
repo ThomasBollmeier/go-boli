@@ -12,7 +12,11 @@ func main() {
 	case 1:
 		internal.Repl()
 	case 2:
-		value, err := interpreter.RunFile(os.Args[1])
+		source, err := interpreter.NewFileSourceFactory().GetSource(os.Args[1])
+		if err != nil {
+			panic(err)
+		}
+		value, err := interpreter.RunSource(source)
 		if err != nil {
 			panic(err)
 		}
