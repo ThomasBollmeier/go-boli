@@ -10,6 +10,7 @@ const (
 	AstReal         AstType = "Real"
 	AstString       AstType = "String"
 	AstSymbol       AstType = "Symbol"
+	AstQuoted       AstType = "Quoted"
 	AstVariable     AstType = "Variable"
 	AstLambda       AstType = "Lambda"
 	AstParameters   AstType = "Parameters"
@@ -117,6 +118,18 @@ func (ast *AST) GetChildren() []*AST {
 	for _, tokenOrChild := range ast.tokensOrChildren {
 		if tokenOrChild.child != nil {
 			ret = append(ret, tokenOrChild.child)
+		}
+	}
+	return ret
+}
+
+func (ast *AST) GetTokens() []*Token {
+	var ret []*Token
+	for _, tokenOrChild := range ast.tokensOrChildren {
+		if tokenOrChild.token != nil {
+			ret = append(ret, tokenOrChild.token)
+		} else {
+			ret = append(ret, tokenOrChild.child.GetTokens()...)
 		}
 	}
 	return ret

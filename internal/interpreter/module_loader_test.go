@@ -83,7 +83,7 @@ func TestRequireNestedWithAlias(t *testing.T) {
 	factory.addSource(strings.Join([]string{"utils", "nums.boli"}, string(os.PathSeparator)), libSource)
 
 	mainCode := `
-		(require 'utils::nums 'n)
+		(require ('utils::nums . 'n))
 		(def (main)
 			(n::my-add 40 2))
 		(main)`
@@ -108,7 +108,7 @@ func TestProvide(t *testing.T) {
 	factory := NewMockSourceFactory()
 
 	libCode := `
-		(provide 'mk-adder 'make-adder)
+		(provide ('mk-adder . 'make-adder))
 		(def (mk-adder n)
 			(λ (m) (my-add n m)))
 		(def (my-add xs...)

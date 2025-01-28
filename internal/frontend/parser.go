@@ -105,6 +105,8 @@ func (p *Parser) parseExpr(token *Token) (*AST, error) {
 		default:
 			return p.parseCall(token)
 		}
+	case TokQuotParen, TokQuotBrace, TokQuotBracket:
+		return p.parseQuote(token)
 	case TokPlus, TokMinus, TokAsterisk, TokSlash, TokCaret, TokPercentage:
 		return NewASTAtom(AstOperator, token), nil
 	case TokEqual, TokGreater, TokGreaterEq, TokLess, TokLessEq:
@@ -241,6 +243,49 @@ func (p *Parser) parsePair(start *Token, first *AST) (*AST, error) {
 	ret.AddToken(dot)
 	ret.AddChild(second)
 	ret.AddToken(end)
+
+	return ret, nil
+}
+
+func (p *Parser) parseQuote(start *Token) (*AST, error) {
+	ret := NewAST(AstCall, "")
+	ret.AddToken(start)
+	ret.AddChild(NewAST(AstVariable, "list"))
+
+	closingType := OpeningClosingPairs[start.Type]
+loop:
+	for {
+		token, err := p.scanner.Advance()
+		if err != nil {
+			return nil, err
+		}
+		switch token.Type {
+		case closingType:
+			ret.AddToken(token)
+			break loop
+		case TokInteger:
+			ret.AddChild(NewASTAtom(AstInteger, token))
+		case TokRational:
+			ret.AddChild(NewASTAtom(AstRational, token))
+		case TokReal:
+			ret.AddChild(NewASTAtom(AstReal, token))
+		case TokIdentifier:
+			symbol := NewAST(AstSymbol, "'"+token.Lexeme)
+			symbol.AddToken(token)
+			ret.AddChild(symbol)
+		case TokLeftParen, TokLeftBrace, TokLeftBracket:
+			var quote *AST
+			quote, err = p.parseQuote(token)
+			if err != nil {
+				return nil, err
+			}
+			ret.AddChild(quote)
+		case TokQuotParen, TokQuotBrace, TokQuotBracket:
+			return nil, errors.New("nested quotes are not allowed")
+		default:
+			ret.AddChild(NewASTAtom(AstQuoted, token))
+		}
+	}
 
 	return ret, nil
 }

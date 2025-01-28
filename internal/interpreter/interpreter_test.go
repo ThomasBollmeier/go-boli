@@ -1,6 +1,7 @@
 package interpreter
 
 import (
+	"go-boli/internal/frontend"
 	"reflect"
 	"testing"
 )
@@ -412,6 +413,29 @@ func TestRun(t *testing.T) {
 				second: &Pair{
 					first:  &Integer{2},
 					second: &NilObject{},
+				},
+			},
+		},
+		{
+			name: "evaluate list quote",
+			args: args{
+				code: `'(+ a b)`,
+			},
+			want: &Pair{
+				first: &QuotedValue{
+					token: &frontend.Token{
+						Type:   frontend.TokPlus,
+						Lexeme: "+",
+						Row:    1,
+						Col:    3,
+					},
+				},
+				second: &Pair{
+					first: &Symbol{"'a"},
+					second: &Pair{
+						first:  &Symbol{"'b"},
+						second: &NilObject{},
+					},
 				},
 			},
 		},

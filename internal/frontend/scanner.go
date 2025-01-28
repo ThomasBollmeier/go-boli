@@ -121,7 +121,24 @@ func (s *Scanner) Advance() (*Token, error) {
 	case '"':
 		return s.scanString(ch, row, col)
 	case '\'':
-		return s.scanSymbol(ch, row, col)
+		var nextChar rune
+		nextChar, err = s.inStream.Peek()
+		if err != nil {
+			return nil, err
+		}
+		switch nextChar {
+		case '(':
+			_, _ = s.advanceChar()
+			return NewToken(TokQuotParen, string(ch)+string(nextChar), row, col), nil
+		case '{':
+			_, _ = s.advanceChar()
+			return NewToken(TokQuotBrace, string(ch)+string(nextChar), row, col), nil
+		case '[':
+			_, _ = s.advanceChar()
+			return NewToken(TokQuotBracket, string(ch)+string(nextChar), row, col), nil
+		default:
+			return s.scanSymbol(ch, row, col)
+		}
 	}
 
 	if unicode.IsDigit(ch) {

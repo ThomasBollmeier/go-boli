@@ -113,32 +113,38 @@ func RunSource(source Source) (ValueObject, error) {
 func makeRequireFn(env *Environment) func(objects []ValueObject) (ValueObject, error) {
 
 	return func(objects []ValueObject) (ValueObject, error) {
-		l := len(objects)
-
-		if l != 1 && l != 2 {
-			return nil, fmt.Errorf("require function expects one or two arguments (got %d)", len(objects))
+		if len(objects) == 0 {
+			return nil, fmt.Errorf("require function expects at least one argument")
 		}
 
-		if objects[0].GetValueType() != ValueSymbol {
-			return nil, fmt.Errorf("require function expects symbol")
-		}
-		moduleName := objects[0].(*Symbol).Value[1:]
+		var moduleName, alias string
+		var valueMap map[string]ValueObject
+		var err error
 
-		alias := ""
-		if l == 2 {
-			if objects[1].GetValueType() != ValueSymbol {
-				return nil, fmt.Errorf("require function expects symbol")
+		for _, object := range objects {
+			switch object.GetValueType() {
+			case ValueSymbol:
+				moduleName = object.(*Symbol).Value[1:]
+				alias = ""
+			case ValuePair:
+				pair := object.(*Pair)
+				if pair.first.GetValueType() != ValueSymbol || pair.second.GetValueType() != ValueSymbol {
+					return nil, fmt.Errorf("require function expects pair of symbols")
+				}
+				moduleName = pair.first.(*Symbol).Value[1:]
+				alias = pair.second.(*Symbol).Value[1:]
+			default:
+				return nil, fmt.Errorf("require function expects symbols or pair of symbols as argument")
 			}
-			alias = objects[1].(*Symbol).Value[1:]
-		}
 
-		valueMap, err := loadModule(env.sourceFactory, moduleName, alias)
-		if err != nil {
-			return nil, err
-		}
+			valueMap, err = loadModule(env.sourceFactory, moduleName, alias)
+			if err != nil {
+				return nil, err
+			}
 
-		for name, value := range valueMap {
-			env.Set(name, value, false)
+			for name, value := range valueMap {
+				env.Set(name, value, false)
+			}
 		}
 
 		return GetNilObject(), nil
@@ -148,29 +154,34 @@ func makeRequireFn(env *Environment) func(objects []ValueObject) (ValueObject, e
 func makeProvideFn(env *Environment) func(objects []ValueObject) (ValueObject, error) {
 
 	return func(objects []ValueObject) (ValueObject, error) {
-		l := len(objects)
 
-		if l != 1 && l != 2 {
-			return nil, fmt.Errorf("provide function expects one or two arguments (got %d)", len(objects))
+		if len(objects) == 0 {
+			return nil, fmt.Errorf("provide function expects at least one argument")
 		}
 
-		if objects[0].GetValueType() != ValueSymbol {
-			return nil, fmt.Errorf("provide function expects symbol")
-		}
-		objName := objects[0].(*Symbol).Value[1:]
+		var objName, alias string
 
-		alias := ""
-		if l == 2 {
-			if objects[1].GetValueType() != ValueSymbol {
-				return nil, fmt.Errorf("provide function expects symbol")
+		for _, object := range objects {
+			switch object.GetValueType() {
+			case ValueSymbol:
+				objName = object.(*Symbol).Value[1:]
+				alias = ""
+			case ValuePair:
+				pair := object.(*Pair)
+				if pair.first.GetValueType() != ValueSymbol || pair.second.GetValueType() != ValueSymbol {
+					return nil, fmt.Errorf("provide function expects pair of symbols")
+				}
+				objName = pair.first.(*Symbol).Value[1:]
+				alias = pair.second.(*Symbol).Value[1:]
+			default:
+				return nil, fmt.Errorf("provide function expects symbols or pair of symbols as argument")
 			}
-			alias = objects[1].(*Symbol).Value[1:]
-		}
 
-		if alias == "" {
-			env.providedValues[objName] = objName
-		} else {
-			env.providedValues[objName] = alias
+			if alias == "" {
+				env.providedValues[objName] = objName
+			} else {
+				env.providedValues[objName] = alias
+			}
 		}
 
 		return GetNilObject(), nil

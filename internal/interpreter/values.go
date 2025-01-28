@@ -12,6 +12,7 @@ const (
 	ValueReal
 	ValueString
 	ValueSymbol
+	ValueQuoted
 	ValueBuiltinFunc
 	ValueLambda
 	ValueTailCall

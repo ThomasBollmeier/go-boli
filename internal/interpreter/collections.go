@@ -24,7 +24,7 @@ func (p *Pair) String() string {
 
 	if b := p.IsList(); b.Value {
 		var curr ValueObject
-		ret := "'("
+		ret := "(list "
 		curr = p
 		first := true
 	listLoop:
@@ -50,7 +50,7 @@ func (p *Pair) String() string {
 		return ret
 	}
 
-	return fmt.Sprintf("'(%s . %s)", p.first, p.second)
+	return fmt.Sprintf("(cons %s %s)", p.first, p.second)
 }
 
 func (p *Pair) Car() ValueObject {
@@ -73,6 +73,26 @@ func (p *Pair) IsList() *Boolean {
 			return NewBoolean(false)
 		}
 	}
+}
+
+func (p *Pair) Flatten() []ValueObject {
+	ret := []ValueObject{p.first}
+	curr := p.second
+loop:
+	for {
+		switch curr.GetValueType() {
+		case ValuePair:
+			ret = append(ret, curr.(*Pair).first)
+			curr = curr.(*Pair).second
+		case ValueNil:
+			break loop
+		default:
+			ret = append(ret, curr)
+			break loop
+		}
+	}
+
+	return ret
 }
 
 type Vector struct {

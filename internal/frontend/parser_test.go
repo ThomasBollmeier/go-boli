@@ -69,6 +69,12 @@ func TestParser_ParseExpression(t *testing.T) {
 			wantValue: "",
 		},
 		{
+			name:      "Parse quoted list",
+			code:      "'(def answer (+ 40 2))",
+			wantType:  AstCall,
+			wantValue: "",
+		},
+		{
 			name:      "Parse conjunction",
 			code:      "(and (< 0 num) (< num 10))",
 			wantType:  AstConjunction,

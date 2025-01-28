@@ -71,6 +71,8 @@ func (interpreter *Interpreter) Eval(ast *frontend.AST) (ValueObject, error) {
 		return interpreter.evalString(ast)
 	case frontend.AstSymbol:
 		return interpreter.evalSymbol(ast)
+	case frontend.AstQuoted:
+		return interpreter.evalQuotedValue(ast)
 	case frontend.AstOperator:
 		return interpreter.evalOperator(ast)
 	case frontend.AstComparisonOp:
@@ -216,6 +218,11 @@ func (interpreter *Interpreter) evalString(str *frontend.AST) (ValueObject, erro
 
 func (interpreter *Interpreter) evalSymbol(symbol *frontend.AST) (ValueObject, error) {
 	return NewSymbol(symbol.GetValue()), nil
+}
+
+func (interpreter *Interpreter) evalQuotedValue(quotedValue *frontend.AST) (ValueObject, error) {
+	token := quotedValue.GetTokens()[0]
+	return NewQuotedValue(token), nil
 }
 
 func (interpreter *Interpreter) evalProgram(program *frontend.AST) (ValueObject, error) {
