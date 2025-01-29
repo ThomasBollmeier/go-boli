@@ -8,6 +8,7 @@ import (
 )
 
 const ModuleSeparator string = "::"
+const ModulePathEnvVar string = "BOLI_MODULE_PATH"
 
 type Source interface {
 	Read() (string, error)
@@ -40,7 +41,7 @@ func (f *FileSource) Read() (string, error) {
 func getModuleDirs() []string {
 	moduleDirs := []string{""}
 
-	pathVar, ok := os.LookupEnv("BOLI_MODULE_PATH")
+	pathVar, ok := os.LookupEnv(ModulePathEnvVar)
 	if ok {
 		paths := strings.Split(pathVar, string(os.PathListSeparator))
 		for _, path := range paths {
