@@ -108,7 +108,9 @@ func TestProvide(t *testing.T) {
 	factory := NewMockSourceFactory()
 
 	libCode := `
-		(provide ('mk-adder . 'make-adder))
+		(provide
+			'my-add
+			('mk-adder . 'make-adder))
 		(def (mk-adder n)
 			(λ (m) (my-add n m)))
 		(def (my-add xs...)
@@ -119,7 +121,7 @@ func TestProvide(t *testing.T) {
 	mainCode := `
 		(require 'utils)
 		(def (main)
-			((make-adder 2) 40))
+			((make-adder (my-add 1 1)) 40))
 		(main)`
 
 	expected := &Integer{42}
