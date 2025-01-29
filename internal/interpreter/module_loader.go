@@ -26,11 +26,29 @@ func NewFileSource(path string) *FileSource {
 }
 
 func (f *FileSource) Read() (string, error) {
-	content, err := os.ReadFile(f.path)
-	if err != nil {
-		return "", err
+	for _, moduleDir := range getModuleDirs() {
+		fullPath := moduleDir + f.path
+		content, err := os.ReadFile(fullPath)
+		if err == nil {
+			return string(content), nil
+		}
 	}
-	return string(content), nil
+
+	return "", errors.New(fmt.Sprintf("File %s not found", f.path))
+}
+
+func getModuleDirs() []string {
+	moduleDirs := []string{""}
+
+	pathVar, ok := os.LookupEnv("BOLI_MODULE_PATH")
+	if ok {
+		paths := strings.Split(pathVar, string(os.PathListSeparator))
+		for _, path := range paths {
+			moduleDirs = append(moduleDirs, path+string(os.PathSeparator))
+		}
+	}
+
+	return moduleDirs
 }
 
 type FileSourceFactory struct{}
