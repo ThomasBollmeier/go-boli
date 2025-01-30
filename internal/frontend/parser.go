@@ -51,6 +51,8 @@ func (p *Parser) parseDefOrExpr(token *Token) (*AST, error) {
 		switch nextToken.Type {
 		case TokDef:
 			return p.parseDefinition(token)
+		case TokDefStruct:
+			return p.parseStructDefinition(token)
 		case TokSetBang:
 			return p.parseVarChange(token)
 		default:
@@ -328,6 +330,57 @@ func (p *Parser) parseDefinition(start *Token) (*AST, error) {
 	ret.AddToken(identifier)
 	ret.AddChild(value)
 	ret.AddToken(end)
+
+	return ret, nil
+}
+
+func (p *Parser) parseStructDefinition(start *Token) (*AST, error) {
+	structEndType := OpeningClosingPairs[start.Type]
+
+	tokenStructDef, err := p.expect(TokDefStruct) // scan def keyword
+	if err != nil {
+		return nil, err
+	}
+
+	var identifier *Token
+	identifier, err = p.expect(TokIdentifier)
+	if err != nil {
+		return nil, err
+	}
+
+	ret := NewAST(AstStructDefinition, identifier.Lexeme)
+	ret.AddToken(start)
+	ret.AddToken(tokenStructDef)
+	ret.AddToken(identifier)
+
+	var fieldsStart *Token
+	fieldsStart, err = p.expect(TokLeftParen, TokLeftBrace, TokLeftBracket)
+	if err != nil {
+		return nil, err
+	}
+	ret.AddToken(fieldsStart)
+
+	fieldsEndType := OpeningClosingPairs[fieldsStart.Type]
+
+	var token *Token
+	for {
+		token, err = p.expect(TokIdentifier, fieldsEndType)
+		if err != nil {
+			return nil, err
+		}
+		if token.Type == TokIdentifier {
+			ret.AddChild(NewASTAtom(AstStructField, token))
+		} else {
+			ret.AddToken(token)
+			break
+		}
+	}
+
+	structEnd, err := p.expect(structEndType)
+	if err != nil {
+		return nil, err
+	}
+	ret.AddToken(structEnd)
 
 	return ret, nil
 }

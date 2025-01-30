@@ -129,6 +129,13 @@ func TestScanner_Advance(t *testing.T) {
 			want: NewToken(TokDef, "def", 2, 1),
 		},
 		{
+			name: "Get a def-struct keyword",
+			fields: fields{
+				stream: *NewBufferedStream(NewCharStreamString("\ndef-struct")),
+			},
+			want: NewToken(TokDefStruct, "def-struct", 2, 1),
+		},
+		{
 			name: "Get keyword and",
 			fields: fields{
 				stream: *NewBufferedStream(NewCharStreamString("\nand")),

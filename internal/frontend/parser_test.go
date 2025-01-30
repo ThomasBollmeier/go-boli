@@ -93,6 +93,12 @@ func TestParser_ParseExpression(t *testing.T) {
 			wantValue: "answer",
 		},
 		{
+			name:      "Parse structure definition",
+			code:      "  (def-struct person (name first-name))\n",
+			wantType:  AstStructDefinition,
+			wantValue: "person",
+		},
+		{
 			name: "Parse if expression",
 			code: `
 					(if (= answer 42)
