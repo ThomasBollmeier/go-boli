@@ -1,0 +1,10 @@
+#|
+Various list functions
+|#
+
+(def (reverse lst)
+  (def (helper l acc)
+    (if l
+      (helper (cdr l) (cons (car l) acc))
+      acc))
+  (helper lst nil))
