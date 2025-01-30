@@ -2,6 +2,7 @@ package frontend
 
 import (
 	"errors"
+	"fmt"
 	"unicode"
 )
 
@@ -117,14 +118,31 @@ func (s *Scanner) Advance() (*Token, error) {
 		} else {
 			return NewToken(TokDot, ".", row, col), nil
 		}
+	case '"':
+		return s.scanString(ch, row, col)
+	case '\'':
+		var nextChar rune
+		nextChar, err = s.inStream.Peek()
+		if err != nil {
+			return nil, err
+		}
+		switch nextChar {
+		case '(':
+			_, _ = s.advanceChar()
+			return NewToken(TokQuotParen, string(ch)+string(nextChar), row, col), nil
+		case '{':
+			_, _ = s.advanceChar()
+			return NewToken(TokQuotBrace, string(ch)+string(nextChar), row, col), nil
+		case '[':
+			_, _ = s.advanceChar()
+			return NewToken(TokQuotBracket, string(ch)+string(nextChar), row, col), nil
+		default:
+			return s.scanSymbol(ch, row, col)
+		}
 	}
 
 	if unicode.IsDigit(ch) {
 		return s.scanNumber(ch, row, col)
-	}
-
-	if ch == '"' {
-		return s.scanString(ch, row, col)
 	}
 
 	if s.isValidFirstIdentChar(ch) {
@@ -137,6 +155,32 @@ func (s *Scanner) Advance() (*Token, error) {
 func (s *Scanner) HasNext() bool {
 	s.skipWhitespace()
 	return s.inStream.HasNext()
+}
+
+func (s *Scanner) scanSymbol(ch rune, row, col int) (*Token, error) {
+	lexeme := string(ch)
+	first := true
+	for {
+		nextCh, err := s.inStream.Peek()
+		if err != nil {
+			if first {
+				return nil, err
+			} else {
+				break
+			}
+		}
+		if first && !s.isValidFirstIdentChar(nextCh) {
+			return nil, fmt.Errorf("invalid start of symbol: %c", nextCh)
+		}
+		if !first && !s.isValidIdentChar(nextCh) {
+			break
+		}
+		first = false
+		_, _ = s.advanceChar()
+		lexeme += string(nextCh)
+	}
+
+	return NewToken(TokSymbol, lexeme, row, col), nil
 }
 
 func (s *Scanner) scanIdentifier(ch rune, row, col int) (*Token, error) {
@@ -184,7 +228,7 @@ func (s *Scanner) isValidIdentChar(ch rune) bool {
 	if unicode.IsSpace(ch) {
 		return false
 	}
-	invalidChars := []rune{'(', ')', '{', '}', '[', ']', ':', '.', ';'}
+	invalidChars := []rune{'(', ')', '{', '}', '[', ']', '.', ';'}
 	for _, invalidChar := range invalidChars {
 		if ch == invalidChar {
 			return false

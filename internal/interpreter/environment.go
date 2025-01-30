@@ -1,30 +1,48 @@
 package interpreter
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 type Environment struct {
-	parent *Environment
-	values map[string]ValueObject
+	parent         *Environment
+	entries        map[string]EnvEntry
+	sourceFactory  SourceFactory
+	providedValues map[string]string
+}
+
+type EnvEntry struct {
+	value   ValueObject
+	isOwned bool
 }
 
 func NewEnvironment(parent *Environment) *Environment {
 	return &Environment{
-		parent: parent,
-		values: make(map[string]ValueObject),
+		parent:         parent,
+		entries:        make(map[string]EnvEntry),
+		sourceFactory:  NewFileSourceFactory(),
+		providedValues: make(map[string]string),
 	}
 }
 
 func NewGlobalEnv() *Environment {
 	ret := NewEnvironment(nil)
 	for _, op := range []string{"+", "-", "*", "/", "%"} {
-		ret.Set(op, NewBuiltinFunc(op, makeOperatorFn(op, true)))
+		ret.SetBuiltinFunc(op, makeOperatorFn(op, true))
 	}
-	ret.Set("^", NewBuiltinFunc("^", makeOperatorFn("^", false)))
+	ret.SetBuiltinFunc("^", makeOperatorFn("^", false))
 	for _, op := range []string{"=", ">", ">=", "<", "<="} {
-		ret.Set(op, NewBuiltinFunc(op, func(objects []ValueObject) (ValueObject, error) {
+		ret.SetBuiltinFunc(op, func(objects []ValueObject) (ValueObject, error) {
 			return compareNumbers(op, objects)
-		}))
+		})
 	}
+	ret.SetBuiltinFunc("not", func(objects []ValueObject) (ValueObject, error) {
+		if len(objects) != 1 {
+			return nil, errors.New("not requires exactly one argument")
+		}
+		return NewBoolean(!isTruthy(objects[0])), nil
+	})
 
 	ret.SetBuiltinFunc("car", car)
 	ret.SetBuiltinFunc("cdr", cdr)
@@ -37,6 +55,13 @@ func NewGlobalEnv() *Environment {
 	ret.SetBuiltinFunc("vector?", isVec)
 	ret.SetBuiltinFunc("vector-ref", vectorGetRef)
 
+	ret.SetBuiltinFunc("display", func(objects []ValueObject) (ValueObject, error) {
+		if len(objects) != 1 {
+			return nil, fmt.Errorf("expected single arg, got %d", len(objects))
+		}
+		fmt.Print(objects[0])
+		return GetNilObject(), nil
+	})
 	ret.SetBuiltinFunc("displayln", func(objects []ValueObject) (ValueObject, error) {
 		if len(objects) != 1 {
 			return nil, fmt.Errorf("expected single arg, got %d", len(objects))
@@ -45,13 +70,17 @@ func NewGlobalEnv() *Environment {
 		return GetNilObject(), nil
 	})
 
+	// module handling:
+	ret.SetBuiltinFunc("require", makeRequireFn(ret))
+	ret.SetBuiltinFunc("provide", makeProvideFn(ret))
+
 	return ret
 }
 
 func (env *Environment) Get(name string) (ValueObject, bool) {
-	value, ok := env.values[name]
+	entry, ok := env.entries[name]
 	if ok {
-		return value, ok
+		return entry.value, ok
 	}
 	if env.parent == nil {
 		return nil, false
@@ -60,7 +89,7 @@ func (env *Environment) Get(name string) (ValueObject, bool) {
 }
 
 func (env *Environment) GetDefiningEnv(name string) *Environment {
-	_, ok := env.values[name]
+	_, ok := env.entries[name]
 	if ok {
 		return env
 	}
@@ -70,10 +99,36 @@ func (env *Environment) GetDefiningEnv(name string) *Environment {
 	return env.parent.GetDefiningEnv(name)
 }
 
-func (env *Environment) Set(name string, value ValueObject) {
-	env.values[name] = value
+func (env *Environment) Set(name string, value ValueObject, isOwned bool) {
+	env.entries[name] = EnvEntry{
+		value:   value,
+		isOwned: isOwned,
+	}
 }
 
 func (env *Environment) SetBuiltinFunc(name string, function func([]ValueObject) (ValueObject, error)) {
-	env.Set(name, NewBuiltinFunc(name, function))
+	env.Set(name, NewBuiltinFunc(name, function), false)
+}
+
+func (env *Environment) GetProvidedValues() (map[string]ValueObject, error) {
+	ret := make(map[string]ValueObject)
+
+	if len(env.providedValues) == 0 {
+		for name, entry := range env.entries {
+			if entry.isOwned {
+				ret[name] = entry.value
+			}
+		}
+	} else {
+		for name, providedName := range env.providedValues {
+			value, ok := env.Get(name)
+			if ok {
+				ret[providedName] = value
+			} else {
+				return nil, fmt.Errorf("no value for %s", providedName)
+			}
+		}
+	}
+
+	return ret, nil
 }

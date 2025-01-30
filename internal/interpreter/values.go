@@ -11,6 +11,8 @@ const (
 	ValueRational
 	ValueReal
 	ValueString
+	ValueSymbol
+	ValueQuoted
 	ValueBuiltinFunc
 	ValueLambda
 	ValueTailCall

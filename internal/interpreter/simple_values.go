@@ -3,6 +3,7 @@ package interpreter
 import (
 	"errors"
 	"fmt"
+	"go-boli/internal/frontend"
 	"math"
 	"strings"
 )
@@ -273,6 +274,38 @@ func (s *Str) GetValueType() ValueType {
 
 func (s *Str) String() string {
 	return "\"" + s.Value + "\""
+}
+
+type Symbol struct {
+	Value string
+}
+
+func NewSymbol(value string) *Symbol {
+	return &Symbol{Value: value}
+}
+
+func (s *Symbol) GetValueType() ValueType {
+	return ValueSymbol
+}
+
+func (s *Symbol) String() string {
+	return s.Value
+}
+
+type QuotedValue struct {
+	token *frontend.Token
+}
+
+func NewQuotedValue(token *frontend.Token) *QuotedValue {
+	return &QuotedValue{token: token}
+}
+
+func (q *QuotedValue) GetValueType() ValueType {
+	return ValueQuoted
+}
+
+func (q *QuotedValue) String() string {
+	return "'" + q.token.Lexeme
 }
 
 // Helper functions

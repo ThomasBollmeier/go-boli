@@ -108,6 +108,13 @@ func TestScanner_Advance(t *testing.T) {
 			want: NewToken(TokString, "\"Thomas sagt: \\\"Hallo!\\\"\"", 1, 1),
 		},
 		{
+			name: "Get a symbol",
+			fields: fields{
+				stream: *NewBufferedStream(NewCharStreamString("'i-am-a-symbol")),
+			},
+			want: NewToken(TokSymbol, "'i-am-a-symbol", 1, 1),
+		},
+		{
 			name: "Get an identifier",
 			fields: fields{
 				stream: *NewBufferedStream(NewCharStreamString("#number-of-lines")),

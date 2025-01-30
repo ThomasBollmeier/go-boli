@@ -1,0 +1,6 @@
+(def (make-adder n)
+    (λ (m) (+ n m)))
+
+(def add-two (make-adder 2))
+
+(displayln (add-two 40))

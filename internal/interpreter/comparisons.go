@@ -14,7 +14,7 @@ type Comparable[T interface{}] interface {
 
 func compare[T Comparable[T]](op string, values []T) (ValueObject, error) {
 	if len(values) < 2 {
-		return nil, errors.New("not enough values to compare")
+		return nil, errors.New("not enough entries to compare")
 	}
 
 	a := values[0]

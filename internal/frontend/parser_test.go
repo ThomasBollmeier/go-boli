@@ -51,6 +51,12 @@ func TestParser_ParseExpression(t *testing.T) {
 			wantValue: "\"3,1415\"",
 		},
 		{
+			name:      "Parse symbol",
+			code:      "\t'a-symbol",
+			wantType:  AstSymbol,
+			wantValue: "'a-symbol",
+		},
+		{
 			name:      "Parse call",
 			code:      "\t(+ 41 1)\n",
 			wantType:  AstCall,
@@ -59,6 +65,12 @@ func TestParser_ParseExpression(t *testing.T) {
 		{
 			name:      "Parse call with braces",
 			code:      "\t{+ 41 1}\n",
+			wantType:  AstCall,
+			wantValue: "",
+		},
+		{
+			name:      "Parse quoted list",
+			code:      "'(def answer (+ 40 2))",
 			wantType:  AstCall,
 			wantValue: "",
 		},

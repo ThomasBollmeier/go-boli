@@ -9,6 +9,9 @@ const (
 	TokRightBrace
 	TokLeftBracket
 	TokRightBracket
+	TokQuotParen
+	TokQuotBrace
+	TokQuotBracket
 	TokIdentifier
 	TokVarParam
 	TokSpread
@@ -18,6 +21,7 @@ const (
 	TokReal
 	TokRational
 	TokString
+	TokSymbol
 	TokPlus
 	TokMinus
 	TokAsterisk
@@ -59,6 +63,9 @@ var OpeningClosingPairs = map[TokenType]TokenType{
 	TokLeftParen:   TokRightParen,
 	TokLeftBracket: TokRightBracket,
 	TokLeftBrace:   TokRightBrace,
+	TokQuotParen:   TokRightParen,
+	TokQuotBrace:   TokRightBrace,
+	TokQuotBracket: TokRightBracket,
 }
 
 var Keywords = map[string]TokenType{
