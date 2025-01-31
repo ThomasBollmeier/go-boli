@@ -18,6 +18,8 @@ const (
 	ValueTailCall
 	ValuePair
 	ValueVector
+	ValueStructType
+	ValueStruct
 	ValueInvalid
 )
 

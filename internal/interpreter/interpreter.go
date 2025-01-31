@@ -47,6 +47,8 @@ func (interpreter *Interpreter) Eval(ast *frontend.AST) (ValueObject, error) {
 		return interpreter.evalProgram(ast)
 	case frontend.AstDefinition:
 		return interpreter.evalDefinition(ast)
+	case frontend.AstStructDefinition:
+		return interpreter.evalStructureDefinition(ast)
 	case frontend.AstVarChange:
 		return interpreter.evalVarChange(ast)
 	case frontend.AstIfExpression:
@@ -247,6 +249,27 @@ func (interpreter *Interpreter) evalDefinition(def *frontend.AST) (ValueObject, 
 		return nil, err
 	}
 	interpreter.env.Set(name, value, true)
+
+	return GetNilObject(), nil
+}
+
+func (interpreter *Interpreter) evalStructureDefinition(structDef *frontend.AST) (ValueObject, error) {
+	name := structDef.GetValue()
+	fields := make([]string, 0)
+	for _, child := range structDef.GetChildren() {
+		fields = append(fields, child.GetValue())
+	}
+	structType := NewStructureType(name, fields)
+
+	interpreter.env.Set(name, structType, true)
+	createFn := structType.createConstructor()
+	interpreter.env.Set(createFn.name, createFn, true)
+	for _, getter := range structType.createGetters() {
+		interpreter.env.Set(getter.name, getter, true)
+	}
+	for _, setter := range structType.createSetters() {
+		interpreter.env.Set(setter.name, setter, true)
+	}
 
 	return GetNilObject(), nil
 }

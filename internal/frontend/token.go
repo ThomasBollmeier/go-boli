@@ -37,6 +37,7 @@ const (
 	TokAnd
 	TokOr
 	TokDef
+	TokDefStruct
 	TokSetBang
 	TokIf
 	TokCond
@@ -69,20 +70,21 @@ var OpeningClosingPairs = map[TokenType]TokenType{
 }
 
 var Keywords = map[string]TokenType{
-	"def":    TokDef,
-	"if":     TokIf,
-	"cond":   TokCond,
-	"block":  TokBlock,
-	"let":    TokLet,
-	"#true":  TokBoolean,
-	"#t":     TokBoolean,
-	"#false": TokBoolean,
-	"#f":     TokBoolean,
-	"nil":    TokNil,
-	"and":    TokAnd,
-	"or":     TokOr,
-	"lambda": TokLambda,
-	"set!":   TokSetBang,
+	"def":        TokDef,
+	"def-struct": TokDefStruct,
+	"if":         TokIf,
+	"cond":       TokCond,
+	"block":      TokBlock,
+	"let":        TokLet,
+	"#true":      TokBoolean,
+	"#t":         TokBoolean,
+	"#false":     TokBoolean,
+	"#f":         TokBoolean,
+	"nil":        TokNil,
+	"and":        TokAnd,
+	"or":         TokOr,
+	"lambda":     TokLambda,
+	"set!":       TokSetBang,
 }
 
 type Token struct {

@@ -1,3 +1,5 @@
+MODULE_DIR=$(PREFIX)/lib/boli/modules
+
 build: clean
 	mkdir build
 	go build -o build/boli cmd/main/main.go
@@ -8,10 +10,10 @@ clean:
 install: build
 	mkdir -p $(PREFIX)/bin
 	cp -f build/boli $(PREFIX)/bin
-	rm -rf $(PREFIX)/lib/boli/modules
-	mkdir -p $(PREFIX)/lib/boli/modules
-	cp -rf modules/* $(PREFIX)/lib/boli/modules
+	rm -rf $(MODULE_DIR)
+	mkdir -p $(MODULE_DIR)
+	cp -rf modules/* $(MODULE_DIR)
 
 uninstall:
 	rm -f $(PREFIX)/bin/boli
-	rm -rf $(PREFIX)/lib/boli/modules
+	rm -rf $(PREFIX)/lib/boli

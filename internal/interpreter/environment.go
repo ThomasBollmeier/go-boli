@@ -29,40 +29,40 @@ func NewEnvironment(parent *Environment) *Environment {
 func NewGlobalEnv() *Environment {
 	ret := NewEnvironment(nil)
 	for _, op := range []string{"+", "-", "*", "/", "%"} {
-		ret.SetBuiltinFunc(op, makeOperatorFn(op, true))
+		ret.SetGlobalBuiltinFunc(op, makeOperatorFn(op, true))
 	}
-	ret.SetBuiltinFunc("^", makeOperatorFn("^", false))
+	ret.SetGlobalBuiltinFunc("^", makeOperatorFn("^", false))
 	for _, op := range []string{"=", ">", ">=", "<", "<="} {
-		ret.SetBuiltinFunc(op, func(objects []ValueObject) (ValueObject, error) {
+		ret.SetGlobalBuiltinFunc(op, func(objects []ValueObject) (ValueObject, error) {
 			return compareNumbers(op, objects)
 		})
 	}
-	ret.SetBuiltinFunc("not", func(objects []ValueObject) (ValueObject, error) {
+	ret.SetGlobalBuiltinFunc("not", func(objects []ValueObject) (ValueObject, error) {
 		if len(objects) != 1 {
 			return nil, errors.New("not requires exactly one argument")
 		}
 		return NewBoolean(!isTruthy(objects[0])), nil
 	})
 
-	ret.SetBuiltinFunc("car", car)
-	ret.SetBuiltinFunc("cdr", cdr)
-	ret.SetBuiltinFunc("pair?", isPair)
-	ret.SetBuiltinFunc("cons", cons)
-	ret.SetBuiltinFunc("list", list)
-	ret.SetBuiltinFunc("list?", isList)
-	ret.SetBuiltinFunc("list-ref", listGetRef)
-	ret.SetBuiltinFunc("vector", vector)
-	ret.SetBuiltinFunc("vector?", isVec)
-	ret.SetBuiltinFunc("vector-ref", vectorGetRef)
+	ret.SetGlobalBuiltinFunc("car", car)
+	ret.SetGlobalBuiltinFunc("cdr", cdr)
+	ret.SetGlobalBuiltinFunc("pair?", isPair)
+	ret.SetGlobalBuiltinFunc("cons", cons)
+	ret.SetGlobalBuiltinFunc("list", list)
+	ret.SetGlobalBuiltinFunc("list?", isList)
+	ret.SetGlobalBuiltinFunc("list-ref", listGetRef)
+	ret.SetGlobalBuiltinFunc("vector", vector)
+	ret.SetGlobalBuiltinFunc("vector?", isVec)
+	ret.SetGlobalBuiltinFunc("vector-ref", vectorGetRef)
 
-	ret.SetBuiltinFunc("display", func(objects []ValueObject) (ValueObject, error) {
+	ret.SetGlobalBuiltinFunc("display", func(objects []ValueObject) (ValueObject, error) {
 		if len(objects) != 1 {
 			return nil, fmt.Errorf("expected single arg, got %d", len(objects))
 		}
 		fmt.Print(objects[0])
 		return GetNilObject(), nil
 	})
-	ret.SetBuiltinFunc("displayln", func(objects []ValueObject) (ValueObject, error) {
+	ret.SetGlobalBuiltinFunc("displayln", func(objects []ValueObject) (ValueObject, error) {
 		if len(objects) != 1 {
 			return nil, fmt.Errorf("expected single arg, got %d", len(objects))
 		}
@@ -71,8 +71,8 @@ func NewGlobalEnv() *Environment {
 	})
 
 	// module handling:
-	ret.SetBuiltinFunc("require", makeRequireFn(ret))
-	ret.SetBuiltinFunc("provide", makeProvideFn(ret))
+	ret.SetGlobalBuiltinFunc("require", makeRequireFn(ret))
+	ret.SetGlobalBuiltinFunc("provide", makeProvideFn(ret))
 
 	return ret
 }
@@ -106,7 +106,7 @@ func (env *Environment) Set(name string, value ValueObject, isOwned bool) {
 	}
 }
 
-func (env *Environment) SetBuiltinFunc(name string, function func([]ValueObject) (ValueObject, error)) {
+func (env *Environment) SetGlobalBuiltinFunc(name string, function func([]ValueObject) (ValueObject, error)) {
 	env.Set(name, NewBuiltinFunc(name, function), false)
 }
 
