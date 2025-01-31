@@ -46,6 +46,60 @@ func (structType *StructureType) createConstructor() *BuiltinFunc {
 	})
 }
 
+func (structType *StructureType) createGetters() []*BuiltinFunc {
+	ret := make([]*BuiltinFunc, len(structType.fields))
+	for i, field := range structType.fields {
+		ret[i] = structType.createGetterForField(field)
+	}
+
+	return ret
+}
+
+func (structType *StructureType) createGetterForField(field string) *BuiltinFunc {
+	getterName := structType.name + "-" + field
+
+	return NewBuiltinFunc(getterName, func(args []ValueObject) (ValueObject, error) {
+		if len(args) != 1 {
+			return nil, fmt.Errorf("getter requires 1 argument, got %v", len(args))
+		}
+
+		if args[0].GetValueType() != ValueStruct {
+			return nil, fmt.Errorf("get method requires struct as first argument")
+		}
+		structValue := args[0].(*Structure)
+
+		return structValue.values[field], nil	
+	})
+}
+
+func (structType *StructureType) createSetters() []*BuiltinFunc {
+	ret := make([]*BuiltinFunc, len(structType.fields))
+	for i, field := range structType.fields {
+		ret[i] = structType.createSetterForField(field)
+	}
+
+	return ret
+}
+
+func (structType *StructureType) createSetterForField(field string) *BuiltinFunc {
+	setterName := structType.name + "-set-" + field + "!"
+
+	return NewBuiltinFunc(setterName, func(args []ValueObject) (ValueObject, error) {
+		if len(args) != 2 {
+			return nil, fmt.Errorf("setter requires 2 arguments, got %v", len(args))
+		}
+
+		if args[0].GetValueType() != ValueStruct {
+			return nil, fmt.Errorf("get method requires struct as first argument")
+		}
+		structValue := args[0].(*Structure)
+
+		structValue.values[field] = args[1]
+
+		return GetNilObject(), nil	
+	})
+}
+
 type Structure struct {
 	structType *StructureType
 	values     map[string]ValueObject

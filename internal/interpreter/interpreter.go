@@ -264,6 +264,12 @@ func (interpreter *Interpreter) evalStructureDefinition(structDef *frontend.AST)
 	interpreter.env.Set(name, structType, true)
 	createFn := structType.createConstructor()
 	interpreter.env.Set(createFn.name, createFn, true)
+	for _, getter := range structType.createGetters() {
+		interpreter.env.Set(getter.name, getter, true)
+	}
+	for _, setter := range structType.createSetters() {
+		interpreter.env.Set(setter.name, setter, true)
+	}
 
 	return GetNilObject(), nil
 }
