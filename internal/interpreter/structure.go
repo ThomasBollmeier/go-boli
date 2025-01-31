@@ -64,7 +64,7 @@ func (structType *StructureType) createGetterForField(field string) *BuiltinFunc
 		}
 
 		if args[0].GetValueType() != ValueStruct {
-			return nil, fmt.Errorf("get method requires struct as first argument")
+			return nil, fmt.Errorf("getter requires struct as first argument")
 		}
 		structValue := args[0].(*Structure)
 
@@ -90,7 +90,7 @@ func (structType *StructureType) createSetterForField(field string) *BuiltinFunc
 		}
 
 		if args[0].GetValueType() != ValueStruct {
-			return nil, fmt.Errorf("get method requires struct as first argument")
+			return nil, fmt.Errorf("setter requires struct as first argument")
 		}
 		structValue := args[0].(*Structure)
 
