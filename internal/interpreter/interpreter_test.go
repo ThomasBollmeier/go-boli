@@ -514,6 +514,37 @@ func TestRun(t *testing.T) {
 			},
 			want: &Boolean{true},
 		},
+		{
+			name: "structure definition works",
+			args: args{
+				code: `
+					(def-struct person (name first-name))
+					person`,
+			},
+			want: &StructureType{
+				name:   "person",
+				fields: []string{"name", "first-name"},
+			},
+		},
+		{
+			name: "structure works",
+			args: args{
+				code: `
+					(def-struct person (name first-name))
+					(def ego (create-person "Bollmeier" "Thomas"))
+					ego`,
+			},
+			want: &Structure{
+				structType: &StructureType{
+					name:   "person",
+					fields: []string{"name", "first-name"},
+				},
+				values: map[string]ValueObject{
+					"name":       &Str{"Bollmeier"},
+					"first-name": &Str{"Thomas"},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
