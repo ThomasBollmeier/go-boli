@@ -47,13 +47,22 @@ func (s *Scanner) Advance() (*Token, error) {
 		if ch == '#' {
 			var nextChar rune
 			nextChar, err = s.inStream.Peek()
-			if err == nil && nextChar == '|' {
-				_, _ = s.Advance()
-				err = s.skipBlockComment()
-				if err != nil {
-					return nil, err
+			if err == nil {
+				if nextChar == '|' {
+					_, _ = s.Advance()
+					err = s.skipBlockComment()
+					if err != nil {
+						return nil, err
+					}
+					continue
 				}
-				continue
+				if nextChar == '!' {
+					err = s.skipLineComment()
+					if err != nil {
+						return nil, err
+					}
+					continue
+				}
 			}
 		}
 		break

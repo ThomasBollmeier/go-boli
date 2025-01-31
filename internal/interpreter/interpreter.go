@@ -100,6 +100,10 @@ func (interpreter *Interpreter) evalInteger(ast *frontend.AST) (ValueObject, err
 func (interpreter *Interpreter) evalCall(call *frontend.AST) (ValueObject, error) {
 	children := call.GetChildren()
 	calleeAst := children[0]
+	if calleeAst.GetType() == frontend.AstVariable && calleeAst.GetValue() == "main" {
+		return nil, errors.New("main function cannot be called explicitly")
+	}
+
 	callee, err := interpreter.Eval(calleeAst)
 	if err != nil {
 		return nil, err
@@ -137,21 +141,7 @@ func (interpreter *Interpreter) evalCall(call *frontend.AST) (ValueObject, error
 		return NewTailCall(callable, arguments), nil
 	}
 
-	var ret ValueObject
-	for {
-		ret, err = callable.Call(arguments)
-		if err != nil {
-			return nil, err
-		}
-		switch ret.GetValueType() {
-		case ValueTailCall:
-			tailCall := ret.(*TailCall)
-			callable = tailCall.callable
-			arguments = tailCall.args
-		default:
-			return ret, nil
-		}
-	}
+	return Call(callable, arguments)
 }
 
 func (interpreter *Interpreter) evalPair(pair *frontend.AST) (ValueObject, error) {

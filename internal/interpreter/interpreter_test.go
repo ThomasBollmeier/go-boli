@@ -545,28 +545,40 @@ func TestRun(t *testing.T) {
 				},
 			},
 		},
-	{
-		name: "structure getter works",
-		args: args{
-			code: `
+		{
+			name: "structure getter works",
+			args: args{
+				code: `
 				(def-struct person (name first-name))
 				(def ego (create-person "Bollmeier" "Thomas"))
 				(person-first-name ego)`,
+			},
+			want: &Str{"Thomas"},
 		},
-		want: &Str{"Thomas"},
-	},
-	{
-		name: "structure setter works",
-		args: args{
-			code: `
+		{
+			name: "structure setter works",
+			args: args{
+				code: `
 				(def-struct person (name first-name))
 				(def ego (create-person "Bollmeier" "Thomas"))
 				(person-set-name! ego "Ballermeier")
 				(person-name ego)`,
+			},
+			want: &Str{"Ballermeier"},
 		},
-		want: &Str{"Ballermeier"},
-	},
-}
+		{
+			name: "evaluate with shebang",
+			args: args{
+				code: `
+				#! env boli
+
+				(def (hello)
+					"Hallo Welt!")
+				(hello)`,
+			},
+			want: &Str{"Hallo Welt!"},
+		},
+	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := Run(tt.args.code)

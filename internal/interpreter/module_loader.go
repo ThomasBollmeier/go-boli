@@ -114,7 +114,7 @@ func loadValues(source Source) (map[string]ValueObject, error) {
 	return providedValues, nil
 }
 
-func RunSource(source Source) (ValueObject, error) {
+func RunSource(source Source, args []string) (ValueObject, error) {
 	code, err := source.Read()
 	if err != nil {
 		return nil, err
@@ -126,7 +126,20 @@ func RunSource(source Source) (ValueObject, error) {
 		return nil, err
 	}
 
-	return value, nil
+	mainValue, ok := interpreter.env.Get("main")
+	if !ok {
+		return value, nil
+	}
+	callable, ok := mainValue.(Callable)
+	if !ok {
+		return nil, errors.New("main is not a callable")
+	}
+	argValues := make([]ValueObject, 0)
+	for _, arg := range args {
+		argValues = append(argValues, NewStr(arg))
+	}
+
+	return Call(callable, argValues)
 }
 
 func makeRequireFn(env *Environment) func(objects []ValueObject) (ValueObject, error) {

@@ -53,9 +53,9 @@ func TestRequire(t *testing.T) {
 
 	mainCode := `
 		(require 'utils)
-		(def (main)
+		(def (run)
 			(my-add 40 2))
-		(main)`
+		(run)`
 
 	expected := &Integer{42}
 
@@ -84,9 +84,9 @@ func TestRequireNestedWithAlias(t *testing.T) {
 
 	mainCode := `
 		(require ('utils::nums . 'n))
-		(def (main)
+		(def (run)
 			(n::my-add 40 2))
-		(main)`
+		(run)`
 
 	expected := &Integer{42}
 
@@ -120,9 +120,9 @@ func TestProvide(t *testing.T) {
 
 	mainCode := `
 		(require 'utils)
-		(def (main)
+		(def (run)
 			((make-adder (my-add 1 1)) 40))
-		(main)`
+		(run)`
 
 	expected := &Integer{42}
 

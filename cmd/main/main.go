@@ -9,21 +9,21 @@ import (
 
 func main() {
 	switch len(os.Args) {
+	case 0:
+		fmt.Printf("Usage: %s <file> [args...]\n", os.Args[0])
 	case 1:
 		internal.Repl()
-	case 2:
+	default:
 		source, err := interpreter.NewFileSourceFactory().GetSource(os.Args[1])
 		if err != nil {
 			panic(err)
 		}
-		value, err := interpreter.RunSource(source)
+		value, err := interpreter.RunSource(source, os.Args[2:])
 		if err != nil {
 			panic(err)
 		}
 		if value.GetValueType() != interpreter.ValueNil {
 			fmt.Println(value)
 		}
-	default:
-		fmt.Printf("Usage: %s <file>\n", os.Args[0])
 	}
 }

@@ -7,11 +7,14 @@ import (
 	ip "go-boli/internal/interpreter"
 )
 
+const Version = "0.2.0"
+
 func Repl() {
 	var input string
 	var value ip.ValueObject
 
 	fmt.Println("(B)ollmeier's (O)wn (L)isp (I)mplementation")
+	fmt.Println("Version: ", Version)
 	fmt.Println("Type ':q' to quit")
 	fmt.Println()
 

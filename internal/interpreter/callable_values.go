@@ -10,6 +10,25 @@ type Callable interface {
 	Call(args []ValueObject) (ValueObject, error)
 }
 
+func Call(callable Callable, arguments []ValueObject) (ValueObject, error) {
+	var ret ValueObject
+	var err error
+	for {
+		ret, err = callable.Call(arguments)
+		if err != nil {
+			return nil, err
+		}
+		switch ret.GetValueType() {
+		case ValueTailCall:
+			tailCall := ret.(*TailCall)
+			callable = tailCall.callable
+			arguments = tailCall.args
+		default:
+			return ret, nil
+		}
+	}
+}
+
 type BuiltinFunc struct {
 	name string
 	fn   func([]ValueObject) (ValueObject, error)
