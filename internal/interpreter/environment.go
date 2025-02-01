@@ -100,9 +100,28 @@ func (env *Environment) GetDefiningEnv(name string) *Environment {
 }
 
 func (env *Environment) Set(name string, value ValueObject, isOwned bool) {
-	env.entries[name] = EnvEntry{
-		value:   value,
-		isOwned: isOwned,
+	if value.GetValueType() != ValueLambda {
+		env.entries[name] = EnvEntry{
+			value:   value,
+			isOwned: isOwned,
+		}
+	} else {
+		var entry EnvEntry
+		var ok bool
+		entry, ok = env.entries[name]
+		if !ok {
+			env.entries[name] = EnvEntry{
+				value:   value,
+				isOwned: isOwned,
+			}
+		} else if entry.isOwned == isOwned {
+			var existingLambda *LambdaFunc
+			existingLambda, ok = entry.value.(*LambdaFunc)
+			if ok {
+				newLambda := value.(*LambdaFunc)
+				_ = existingLambda.Merge(newLambda)
+			}
+		}
 	}
 }
 

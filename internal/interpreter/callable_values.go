@@ -50,12 +50,64 @@ func (b *BuiltinFunc) Call(args []ValueObject) (ValueObject, error) {
 	return b.fn(args)
 }
 
-type LambdaFunc struct {
-	name     string
+type LambdaVariant struct {
 	params   []string
 	varParam string
 	body     *frontend.AST
 	env      *Environment
+}
+
+func NewLambdaVariant(
+	params []string,
+	varParam string,
+	body *frontend.AST,
+	env *Environment) *LambdaVariant {
+	return &LambdaVariant{
+		params,
+		varParam,
+		body,
+		env,
+	}
+}
+
+func (l *LambdaVariant) GetMinMaxArgNum() (int, int) {
+	minNumArgs := len(l.params)
+	var maxNumArgs int
+	if l.varParam == "" {
+		maxNumArgs = minNumArgs
+	} else {
+		maxNumArgs = -1
+	}
+
+	return minNumArgs, maxNumArgs
+}
+
+func (l *LambdaVariant) OverlapsWith(other *LambdaVariant) bool {
+	min1, max1 := l.GetMinMaxArgNum()
+	min2, max2 := other.GetMinMaxArgNum()
+
+	if max1 == -1 {
+		if max2 == -1 {
+			return true
+		} else {
+			return min1 <= max2
+		}
+	}
+
+	if min1 >= min2 && (min1 <= max2 || max2 == -1) {
+		return true
+	}
+
+	if max1 >= min2 && (max1 <= max2 || max2 == -1) {
+		return true
+	}
+
+	return false
+}
+
+type LambdaFunc struct {
+	name     string
+	variants []*LambdaVariant
 }
 
 func NewLambdaFunc(
@@ -66,11 +118,10 @@ func NewLambdaFunc(
 	env *Environment) *LambdaFunc {
 
 	return &LambdaFunc{
-		name,
-		params,
-		varParam,
-		body,
-		env,
+		name: name,
+		variants: []*LambdaVariant{
+			NewLambdaVariant(params, varParam, body, env),
+		},
 	}
 }
 
@@ -86,34 +137,63 @@ func (l *LambdaFunc) String() string {
 	}
 }
 
-func (l *LambdaFunc) Call(args []ValueObject) (ValueObject, error) {
-	numArgs := len(args)
-	numParams := len(l.params)
+func (l *LambdaFunc) Merge(other *LambdaFunc) error {
+	for _, variant := range other.variants {
+		err := l.addVariant(variant)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
-	if numArgs < numParams {
-		return nil, errors.New("too few arguments given")
-	} else if numArgs > numParams && l.varParam == "" {
-		return nil, errors.New("too many arguments given")
+func (l *LambdaFunc) addVariant(variant *LambdaVariant) error {
+	for _, v := range l.variants {
+		if v.OverlapsWith(variant) {
+			return errors.New("new variant overlaps with existing lambda variant")
+		}
 	}
 
-	interpreter := NewInterpreter(l.env)
+	l.variants = append(l.variants, variant)
+	return nil
+}
+
+func (l *LambdaFunc) Call(args []ValueObject) (ValueObject, error) {
+	numArgs := len(args)
+
+	// Find matching variant:
+	var matchingVariant *LambdaVariant
+	for _, variant := range l.variants {
+		minNumArgs, maxNumArgs := variant.GetMinMaxArgNum()
+		if numArgs >= minNumArgs && (numArgs <= maxNumArgs || maxNumArgs == -1) {
+			matchingVariant = variant
+			break
+		}
+	}
+	if matchingVariant == nil {
+		return nil, errors.New("no variant with matching arity found")
+	}
+
+	interpreter := NewInterpreter(matchingVariant.env)
 	interpreter.beginBlockScope()
 
 	env := interpreter.env
 
-	for i, param := range l.params {
+	for i, param := range matchingVariant.params {
 		env.Set(param, args[i], true)
 	}
 
-	if l.varParam != "" {
+	numParams := len(matchingVariant.params)
+
+	if matchingVariant.varParam != "" {
 		varArgs := NewVector(nil)
 		for i := numParams; i < numArgs; i++ {
 			varArgs.Append(args[i])
 		}
-		env.Set(l.varParam, varArgs, true)
+		env.Set(matchingVariant.varParam, varArgs, true)
 	}
 
-	ret, err := interpreter.evalBlock(l.body)
+	ret, err := interpreter.evalBlock(matchingVariant.body)
 	if err != nil {
 		interpreter.endBlockScope()
 		return nil, err

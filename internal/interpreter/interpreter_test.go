@@ -390,6 +390,18 @@ func TestRun(t *testing.T) {
 			want: &Integer{15},
 		},
 		{
+			name: "evaluate lambda with multiple arities",
+			args: args{
+				code: `
+					(def (add a)
+						(add a 42))
+					(def (add a b)
+						(+ a b))
+				    (add 0)`,
+			},
+			want: &Integer{42},
+		},
+		{
 			name: "evaluate pair",
 			args: args{
 				code: `
