@@ -48,12 +48,18 @@ func NewGlobalEnv() *Environment {
 	ret.SetGlobalBuiltinFunc("cdr", cdr)
 	ret.SetGlobalBuiltinFunc("pair?", isPair)
 	ret.SetGlobalBuiltinFunc("cons", cons)
+
 	ret.SetGlobalBuiltinFunc("list", list)
 	ret.SetGlobalBuiltinFunc("list?", isList)
 	ret.SetGlobalBuiltinFunc("list-ref", listGetRef)
+
 	ret.SetGlobalBuiltinFunc("vector", vector)
 	ret.SetGlobalBuiltinFunc("vector?", isVec)
 	ret.SetGlobalBuiltinFunc("vector-ref", vectorGetRef)
+
+	ret.SetGlobalBuiltinFunc("list->stream", listToStream)
+	ret.SetGlobalBuiltinFunc("stream?", isStream)
+	ret.SetGlobalBuiltinFunc("take", take)
 
 	ret.SetGlobalBuiltinFunc("display", func(objects []ValueObject) (ValueObject, error) {
 		if len(objects) != 1 {

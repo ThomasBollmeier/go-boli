@@ -18,6 +18,7 @@ const (
 	ValueTailCall
 	ValuePair
 	ValueVector
+	ValueStream
 	ValueStructType
 	ValueStruct
 	ValueInvalid
@@ -26,4 +27,8 @@ const (
 type ValueObject interface {
 	fmt.Stringer
 	GetValueType() ValueType
+}
+
+type Clonable[T ValueObject] interface {
+	Clone() T
 }

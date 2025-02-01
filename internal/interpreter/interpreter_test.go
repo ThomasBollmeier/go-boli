@@ -590,6 +590,15 @@ func TestRun(t *testing.T) {
 			},
 			want: &Str{"Hallo Welt!"},
 		},
+		{
+			name: "take works",
+			args: args{
+				code: `
+				(def lst '(1 2 3 4))
+				(take 1 (list->stream lst))`,
+			},
+			want: &Vector{elements: []ValueObject{&Integer{1}}},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
