@@ -599,6 +599,16 @@ func TestRun(t *testing.T) {
 			},
 			want: &Vector{elements: []ValueObject{&Integer{1}}},
 		},
+		{
+			name: "filter works for stream",
+			args: args{
+				code: `
+				(def (even? x) (= (% x 2) 0))
+				(def lst '(1 2 3 4 5))
+				(take 3 (filter even? (list->stream lst)))`,
+			},
+			want: &Vector{elements: []ValueObject{&Integer{2}, &Integer{4}}},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

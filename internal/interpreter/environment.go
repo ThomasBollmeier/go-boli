@@ -59,6 +59,8 @@ func NewGlobalEnv() *Environment {
 
 	ret.SetGlobalBuiltinFunc("list->stream", listToStream)
 	ret.SetGlobalBuiltinFunc("stream?", isStream)
+
+	ret.SetGlobalBuiltinFunc("filter", filter)
 	ret.SetGlobalBuiltinFunc("take", take)
 
 	ret.SetGlobalBuiltinFunc("display", func(objects []ValueObject) (ValueObject, error) {

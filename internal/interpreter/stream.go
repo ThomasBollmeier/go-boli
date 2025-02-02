@@ -30,7 +30,7 @@ func (stream *ListStream) GetValueType() ValueType {
 }
 
 func (stream *ListStream) String() string {
-	return "<stream>"
+	return "<list stream>"
 }
 
 func (stream *ListStream) Next() (ValueObject, bool) {
@@ -56,6 +56,62 @@ func listToStream(objects []ValueObject) (ValueObject, error) {
 	}
 
 	return NewListStream(objects[0])
+}
+
+type FilteredStream struct {
+	stream      Stream
+	predicateFn Callable
+}
+
+func NewFilteredStream(stream Stream, predicateFn Callable) *FilteredStream {
+	return &FilteredStream{
+		stream,
+		predicateFn,
+	}
+}
+
+func (filtered *FilteredStream) GetValueType() ValueType {
+	return ValueStream
+}
+
+func (filtered *FilteredStream) String() string {
+	return "<filtered stream>"
+}
+
+func (filtered *FilteredStream) Clone() Stream {
+	return NewFilteredStream(filtered.stream.Clone(), filtered.predicateFn)
+}
+
+func (filtered *FilteredStream) Next() (ValueObject, bool) {
+	for {
+		value, ok := filtered.stream.Next()
+		if !ok {
+			return nil, false
+		}
+		predVal, err := Call(filtered.predicateFn, []ValueObject{value})
+		if err != nil {
+			return nil, false
+		}
+		if isTruthy(predVal) {
+			return value, true
+		}
+	}
+}
+
+func filter(objects []ValueObject) (ValueObject, error) {
+	if len(objects) != 2 {
+		return nil, fmt.Errorf("expected 2 values, got %d", len(objects))
+	}
+	predicateFn, ok := objects[0].(Callable)
+	if !ok {
+		return nil, fmt.Errorf("first argument of filter must be a function")
+	}
+	stream, ok := objects[1].(Stream)
+	if !ok {
+		return nil, fmt.Errorf("second argument of filter must be a stream")
+	}
+
+	return NewFilteredStream(stream, predicateFn), nil
 }
 
 func take(objects []ValueObject) (ValueObject, error) {
