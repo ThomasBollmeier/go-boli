@@ -12,7 +12,7 @@ type NilObject struct{}
 
 var nilObject = NilObject{}
 
-func GetNilObject() ValueObject {
+func GetNilObject() *NilObject {
 	return &nilObject
 }
 
@@ -22,6 +22,30 @@ func (n *NilObject) GetValueType() ValueType {
 
 func (n *NilObject) String() string {
 	return "nil"
+}
+
+func (n *NilObject) Take(int) (Sequence, error) {
+	return n, nil
+}
+
+func (n *NilObject) TakeWhile(Callable) (Sequence, error) {
+	return n, nil
+}
+
+func (n *NilObject) Filter(Callable) (Sequence, error) {
+	return n, nil
+}
+
+func (n *NilObject) Map(Callable) (Sequence, error) {
+	return n, nil
+}
+
+func (n *NilObject) Drop(int) (Sequence, error) {
+	return n, nil
+}
+
+func (n *NilObject) DropWhile(Callable) (Sequence, error) {
+	return n, nil
 }
 
 type Boolean struct {

@@ -219,7 +219,7 @@ func (interpreter *Interpreter) evalQuotedValue(quotedValue *frontend.AST) (Valu
 
 func (interpreter *Interpreter) evalProgram(program *frontend.AST) (ValueObject, error) {
 	var err error
-	ret := GetNilObject()
+	var ret ValueObject = GetNilObject()
 
 	for _, child := range program.GetChildren() {
 		ret, err = interpreter.Eval(child)
@@ -317,7 +317,7 @@ func (interpreter *Interpreter) evalLambda(lambda *frontend.AST) (ValueObject, e
 
 func (interpreter *Interpreter) evalBlock(block *frontend.AST) (ValueObject, error) {
 	var err error
-	ret := GetNilObject()
+	var ret ValueObject = GetNilObject()
 
 	interpreter.beginBlockScope()
 

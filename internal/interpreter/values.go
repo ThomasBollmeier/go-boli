@@ -29,6 +29,6 @@ type ValueObject interface {
 	GetValueType() ValueType
 }
 
-type Clonable[T ValueObject] interface {
+type Clonable[T any] interface {
 	Clone() T
 }

@@ -1,9 +1,11 @@
 package interpreter
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Stream interface {
-	ValueObject
+	fmt.Stringer
 	Clonable[Stream]
 	Next() (ValueObject, bool)
 }
@@ -23,10 +25,6 @@ func (stream *ListStream) Clone() Stream {
 	return &ListStream{
 		list: stream.list,
 	}
-}
-
-func (stream *ListStream) GetValueType() ValueType {
-	return ValueStream
 }
 
 func (stream *ListStream) String() string {
@@ -52,10 +50,6 @@ func NewFilteredStream(stream Stream, predicateFn Callable) *FilteredStream {
 		stream,
 		predicateFn,
 	}
-}
-
-func (filtered *FilteredStream) GetValueType() ValueType {
-	return ValueStream
 }
 
 func (filtered *FilteredStream) String() string {
@@ -94,10 +88,6 @@ func NewMappedStream(stream Stream, mapFn Callable) *MappedStream {
 	}
 }
 
-func (mapped *MappedStream) GetValueType() ValueType {
-	return ValueStream
-}
-
 func (mapped *MappedStream) String() string {
 	return "<mapped stream>"
 }
@@ -130,10 +120,6 @@ func NewDroppedStream(stream Stream, n int, dropDone bool) *DroppedStream {
 		n,
 		dropDone,
 	}
-}
-
-func (dropped *DroppedStream) GetValueType() ValueType {
-	return ValueStream
 }
 
 func (dropped *DroppedStream) String() string {
@@ -172,10 +158,6 @@ func NewDroppedWhileStream(stream Stream, predicate Callable, dropDone bool) *Dr
 	}
 }
 
-func (dropped *DroppedWhileStream) GetValueType() ValueType {
-	return ValueStream
-}
-
 func (dropped *DroppedWhileStream) String() string {
 	return "<dropped-while stream>"
 }
@@ -207,6 +189,73 @@ func (dropped *DroppedWhileStream) Next() (ValueObject, bool) {
 	return dropped.stream.Next()
 }
 
+type StreamSeq struct {
+	stream Stream
+}
+
+func NewStreamSeq(stream Stream) *StreamSeq {
+	return &StreamSeq{stream}
+}
+
+func (seq *StreamSeq) GetValueType() ValueType {
+	return ValueStream
+}
+
+func (seq *StreamSeq) String() string {
+	return seq.stream.String()
+}
+
+func (seq *StreamSeq) Take(n int) (Sequence, error) {
+	var elements []ValueObject
+	stream := seq.stream.Clone()
+	for i := 0; i < n; i++ {
+		element, ok := stream.Next()
+		if !ok {
+			break
+		}
+		elements = append(elements, element)
+	}
+
+	return NewVector(elements), nil
+}
+
+func (seq *StreamSeq) TakeWhile(pred Callable) (Sequence, error) {
+	stream := seq.stream.Clone()
+	var elements []ValueObject
+	for {
+		element, ok := stream.Next()
+		if !ok {
+			break
+		}
+		predVal, err := Call(pred, []ValueObject{element})
+		if err != nil {
+			return nil, err
+		}
+		if !isTruthy(predVal) {
+			break
+		}
+		elements = append(elements, element)
+	}
+
+	return NewVector(elements), nil
+}
+
+func (seq *StreamSeq) Filter(pred Callable) (Sequence, error) {
+	return NewStreamSeq(NewFilteredStream(seq.stream, pred)), nil
+}
+
+func (seq *StreamSeq) Map(fn Callable) (Sequence, error) {
+	return NewStreamSeq(NewMappedStream(seq.stream, fn)), nil
+}
+
+func (seq *StreamSeq) Drop(n int) (Sequence, error) {
+	return NewStreamSeq(NewDroppedStream(seq.stream, n, false)), nil
+}
+
+func (seq *StreamSeq) DropWhile(pred Callable) (Sequence, error) {
+	return NewStreamSeq(NewDroppedWhileStream(seq.stream, pred, false)), nil
+}
+
 // functions
 
 func isStream(objects []ValueObject) (ValueObject, error) {
@@ -221,134 +270,10 @@ func listToStream(objects []ValueObject) (ValueObject, error) {
 	if len(objects) != 1 {
 		return nil, fmt.Errorf("expected 1 value, got %d", len(objects))
 	}
-
-	return NewListStream(objects[0])
-}
-
-func dropWhile(objects []ValueObject) (ValueObject, error) {
-	if len(objects) != 2 {
-		return nil, fmt.Errorf("expected 2 values, got %d", len(objects))
+	listStream, err := NewListStream(objects[0])
+	if err != nil {
+		return nil, err
 	}
 
-	predicate, ok := objects[0].(Callable)
-	if !ok {
-		return nil, fmt.Errorf("fist argument of drop-while must be a function, got %s", objects[0])
-	}
-
-	stream, ok := objects[1].(Stream)
-	if !ok {
-		return nil, fmt.Errorf("second argument of drop must be a stream, got %s", objects[1])
-	}
-
-	return NewDroppedWhileStream(stream, predicate, false), nil
-}
-
-func drop(objects []ValueObject) (ValueObject, error) {
-	if len(objects) != 2 {
-		return nil, fmt.Errorf("expected 2 values, got %d", len(objects))
-	}
-
-	intVal, ok := objects[0].(*Integer)
-	if !ok {
-		return nil, fmt.Errorf("fist argument of drop must be an integer, got %s", objects[0])
-	}
-
-	stream, ok := objects[1].(Stream)
-	if !ok {
-		return nil, fmt.Errorf("second argument of drop must be a stream, got %s", objects[1])
-	}
-
-	return NewDroppedStream(stream, intVal.Value, false), nil
-}
-
-func mapFunc(objects []ValueObject) (ValueObject, error) {
-	if len(objects) != 2 {
-		return nil, fmt.Errorf("expected 2 values, got %d", len(objects))
-	}
-	mapFn, ok := objects[0].(Callable)
-	if !ok {
-		return nil, fmt.Errorf("first argument of map must be a function")
-	}
-	stream, ok := objects[1].(Stream)
-	if !ok {
-		return nil, fmt.Errorf("second argument of map must be a stream")
-	}
-
-	return NewMappedStream(stream, mapFn), nil
-}
-
-func filter(objects []ValueObject) (ValueObject, error) {
-	if len(objects) != 2 {
-		return nil, fmt.Errorf("expected 2 values, got %d", len(objects))
-	}
-	predicateFn, ok := objects[0].(Callable)
-	if !ok {
-		return nil, fmt.Errorf("first argument of filter must be a function")
-	}
-	stream, ok := objects[1].(Stream)
-	if !ok {
-		return nil, fmt.Errorf("second argument of filter must be a stream")
-	}
-
-	return NewFilteredStream(stream, predicateFn), nil
-}
-
-func take(objects []ValueObject) (ValueObject, error) {
-	if len(objects) != 2 {
-		return nil, fmt.Errorf("expected 2 values, got %d", len(objects))
-	}
-	if objects[0].GetValueType() != ValueInteger {
-		return nil, fmt.Errorf("first argument of take must be an integer")
-	}
-	if objects[1].GetValueType() != ValueStream {
-		return nil, fmt.Errorf("second argument of take must be a stream")
-	}
-
-	n := objects[0].(*Integer).Value
-	stream := objects[1].(Stream).Clone()
-
-	var elements []ValueObject
-	for i := 0; i < n; i++ {
-		element, ok := stream.Next()
-		if !ok {
-			break
-		}
-		elements = append(elements, element)
-	}
-
-	return NewVector(elements), nil
-}
-
-func takeWhile(objects []ValueObject) (ValueObject, error) {
-	if len(objects) != 2 {
-		return nil, fmt.Errorf("expected 2 values, got %d", len(objects))
-	}
-
-	predicate, ok := objects[0].(Callable)
-	if !ok {
-		return nil, fmt.Errorf("first argument of take-while must be a function")
-	}
-	if objects[1].GetValueType() != ValueStream {
-		return nil, fmt.Errorf("second argument of take-while must be a stream")
-	}
-
-	stream := objects[1].(Stream).Clone()
-
-	var elements []ValueObject
-	for {
-		element, ok := stream.Next()
-		if !ok {
-			break
-		}
-		predVal, err := Call(predicate, []ValueObject{element})
-		if err != nil {
-			return nil, err
-		}
-		if !isTruthy(predVal) {
-			break
-		}
-		elements = append(elements, element)
-	}
-
-	return NewVector(elements), nil
+	return NewStreamSeq(listStream), nil
 }

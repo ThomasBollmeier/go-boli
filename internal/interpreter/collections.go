@@ -95,6 +95,118 @@ loop:
 	return ret
 }
 
+func (p *Pair) Take(n int) (Sequence, error) {
+	var elements []ValueObject
+	listElements := p.Flatten()
+	for i, element := range listElements {
+		if i >= n {
+			break
+		}
+		elements = append(elements, element)
+	}
+
+	return elementsToSequence(elements), nil
+}
+
+func (p *Pair) TakeWhile(pred Callable) (Sequence, error) {
+	var elements []ValueObject
+	listElements := p.Flatten()
+	for _, element := range listElements {
+		predVal, err := Call(pred, []ValueObject{element})
+		if err != nil {
+			return nil, err
+		}
+		if !isTruthy(predVal) {
+			break
+		}
+		elements = append(elements, element)
+	}
+
+	return elementsToSequence(elements), nil
+}
+
+func (p *Pair) Filter(pred Callable) (Sequence, error) {
+	var elements []ValueObject
+	listElements := p.Flatten()
+	for _, element := range listElements {
+		predVal, err := Call(pred, []ValueObject{element})
+		if err != nil {
+			return nil, err
+		}
+		if isTruthy(predVal) {
+			elements = append(elements, element)
+		}
+	}
+	return elementsToSequence(elements), nil
+}
+
+func (p *Pair) Map(fn Callable) (Sequence, error) {
+	var elements []ValueObject
+	listElements := p.Flatten()
+	for _, element := range listElements {
+		mappedVal, err := Call(fn, []ValueObject{element})
+		if err != nil {
+			return nil, err
+		}
+		elements = append(elements, mappedVal)
+	}
+	return elementsToSequence(elements), nil
+}
+
+func (p *Pair) Drop(n int) (Sequence, error) {
+	var elements []ValueObject
+	listElements := p.Flatten()
+	for i, element := range listElements {
+		if i < n {
+			continue
+		}
+		elements = append(elements, element)
+	}
+	return elementsToSequence(elements), nil
+
+}
+
+func (p *Pair) DropWhile(pred Callable) (Sequence, error) {
+	var elements []ValueObject
+	listElements := p.Flatten()
+	dropped := false
+	for _, element := range listElements {
+		if !dropped {
+			predVal, err := Call(pred, []ValueObject{element})
+			if err != nil {
+				return nil, err
+			}
+			if isTruthy(predVal) {
+				continue
+			} else {
+				dropped = true
+				elements = append(elements, element)
+			}
+		} else {
+			elements = append(elements, element)
+		}
+	}
+
+	return elementsToSequence(elements), nil
+}
+
+func elementsToSequence(elements []ValueObject) Sequence {
+	if len(elements) == 0 {
+		return GetNilObject()
+	}
+	var ret *Pair
+	numElements := len(elements)
+	for i := numElements - 1; i >= 0; i-- {
+		if ret == nil {
+			ret = NewPair(elements[i], GetNilObject())
+		} else {
+			ret = NewPair(elements[i], ret)
+		}
+	}
+
+	return ret
+}
+
 type Vector struct {
 	elements []ValueObject
 }
@@ -126,6 +238,93 @@ func (v *Vector) Append(element ValueObject) {
 
 func (v *Vector) GetElements() []ValueObject {
 	return v.elements
+}
+
+func (v *Vector) Take(n int) (Sequence, error) {
+	var elements []ValueObject
+	for i, element := range v.elements {
+		if i >= n {
+			break
+		}
+		elements = append(elements, element)
+	}
+	return NewVector(elements), nil
+}
+
+func (v *Vector) TakeWhile(pred Callable) (Sequence, error) {
+	var elements []ValueObject
+	for _, element := range v.elements {
+		predVal, err := Call(pred, []ValueObject{element})
+		if err != nil {
+			return nil, err
+		}
+		if !isTruthy(predVal) {
+			break
+		}
+		elements = append(elements, element)
+	}
+	return NewVector(elements), nil
+}
+
+func (v *Vector) Filter(pred Callable) (Sequence, error) {
+	var elements []ValueObject
+	for _, element := range v.elements {
+		predVal, err := Call(pred, []ValueObject{element})
+		if err != nil {
+			return nil, err
+		}
+		if isTruthy(predVal) {
+			elements = append(elements, element)
+		}
+	}
+	return NewVector(elements), nil
+}
+
+func (v *Vector) Map(fn Callable) (Sequence, error) {
+	var elements []ValueObject
+	for _, element := range v.elements {
+		mappedVal, err := Call(fn, []ValueObject{element})
+		if err != nil {
+			return nil, err
+		}
+		elements = append(elements, mappedVal)
+	}
+	return NewVector(elements), nil
+}
+
+func (v *Vector) Drop(n int) (Sequence, error) {
+	var elements []ValueObject
+	for i, element := range v.elements {
+		if i < n {
+			continue
+		}
+		elements = append(elements, element)
+	}
+	return NewVector(elements), nil
+
+}
+
+func (v *Vector) DropWhile(pred Callable) (Sequence, error) {
+	var elements []ValueObject
+	dropped := false
+	for _, element := range v.elements {
+		if !dropped {
+			predVal, err := Call(pred, []ValueObject{element})
+			if err != nil {
+				return nil, err
+			}
+			if isTruthy(predVal) {
+				continue
+			} else {
+				dropped = true
+				elements = append(elements, element)
+			}
+		} else {
+			elements = append(elements, element)
+		}
+	}
+
+	return NewVector(elements), nil
 }
 
 func vector(values []ValueObject) (ValueObject, error) {
@@ -240,7 +439,7 @@ func cons(values []ValueObject) (ValueObject, error) {
 }
 
 func list(values []ValueObject) (ValueObject, error) {
-	ret := GetNilObject()
+	var ret ValueObject = GetNilObject()
 
 	for i := len(values) - 1; i > -1; i-- {
 		ret = NewPair(values[i], ret)
