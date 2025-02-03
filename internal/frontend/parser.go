@@ -271,10 +271,14 @@ loop:
 			ret.AddChild(NewASTAtom(AstRational, token))
 		case TokReal:
 			ret.AddChild(NewASTAtom(AstReal, token))
+		case TokString:
+			ret.AddChild(NewASTAtom(AstString, token))
 		case TokIdentifier:
 			symbol := NewAST(AstSymbol, "'"+token.Lexeme)
 			symbol.AddToken(token)
 			ret.AddChild(symbol)
+		case TokSymbol:
+			ret.AddChild(NewASTAtom(AstSymbol, token))
 		case TokLeftParen, TokLeftBrace, TokLeftBracket:
 			var quote *AST
 			quote, err = p.parseQuote(token)

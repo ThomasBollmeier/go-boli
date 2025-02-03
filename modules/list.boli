@@ -8,3 +8,12 @@ Various list functions
       (helper (cdr l) (cons (car l) acc))
       acc))
   (helper lst nil))
+
+(def (enumerate lst)
+  (def (helper i l acc)
+    (if l
+      (helper (+ i 1) (cdr l) (cons (i . (car l)) acc))
+      (reverse acc)))
+  (helper 0 lst nil))
+
+
