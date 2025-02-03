@@ -118,6 +118,97 @@ func (mapped *MappedStream) Next() (ValueObject, bool) {
 	return mappedVal, true
 }
 
+type DroppedStream struct {
+	stream   Stream
+	n        int
+	dropDone bool
+}
+
+func NewDroppedStream(stream Stream, n int, dropDone bool) *DroppedStream {
+	return &DroppedStream{
+		stream,
+		n,
+		dropDone,
+	}
+}
+
+func (dropped *DroppedStream) GetValueType() ValueType {
+	return ValueStream
+}
+
+func (dropped *DroppedStream) String() string {
+	return "<dropped stream>"
+}
+
+func (dropped *DroppedStream) Clone() Stream {
+	return NewDroppedStream(dropped.stream.Clone(), dropped.n, dropped.dropDone)
+}
+
+func (dropped *DroppedStream) Next() (ValueObject, bool) {
+	if !dropped.dropDone {
+		for i := 0; i < dropped.n; i++ {
+			_, ok := dropped.stream.Next()
+			if !ok {
+				return nil, false
+			}
+		}
+		dropped.dropDone = true
+	}
+
+	return dropped.stream.Next()
+}
+
+type DroppedWhileStream struct {
+	stream   Stream
+	predicate Callable
+	dropDone bool
+}
+
+func NewDroppedWhileStream(stream Stream, predicate Callable, dropDone bool) *DroppedWhileStream {
+	return &DroppedWhileStream{
+		stream,
+		predicate,
+		dropDone,
+	}
+}
+
+func (dropped *DroppedWhileStream) GetValueType() ValueType {
+	return ValueStream
+}
+
+func (dropped *DroppedWhileStream) String() string {
+	return "<dropped-while stream>"
+}
+
+func (dropped *DroppedWhileStream) Clone() Stream {
+	return NewDroppedWhileStream(dropped.stream.Clone(), 
+															 dropped.predicate, 
+															 dropped.dropDone)
+}
+
+func (dropped *DroppedWhileStream) Next() (ValueObject, bool) {
+	if !dropped.dropDone {
+		for {
+			value, ok := dropped.stream.Next()
+			if !ok {
+				return nil, false
+			}
+			predVal, err := Call(dropped.predicate, []ValueObject{value})
+			if err != nil {
+				return nil, false
+			}
+			if !isTruthy(predVal) {
+				dropped.dropDone = true
+				return value, true
+			}
+		}
+	}
+
+	return dropped.stream.Next()
+}
+
+// functions
+
 func isStream(objects []ValueObject) (ValueObject, error) {
 	if len(objects) != 1 {
 		return nil, fmt.Errorf("expected 1 value, got %d", len(objects))
@@ -132,6 +223,43 @@ func listToStream(objects []ValueObject) (ValueObject, error) {
 	}
 
 	return NewListStream(objects[0])
+}
+
+
+func dropWhile(objects []ValueObject) (ValueObject, error) {
+	if len(objects) != 2 {
+		return nil, fmt.Errorf("expected 2 values, got %d", len(objects))
+	}
+
+	predicate, ok := objects[0].(Callable)
+	if !ok {
+		return nil, fmt.Errorf("fist argument of drop-while must be a function, got %s", objects[0])
+	}
+
+	stream, ok := objects[1].(Stream)
+	if !ok {
+		return nil, fmt.Errorf("second argument of drop must be a stream, got %s", objects[1])
+	}
+
+	return NewDroppedWhileStream(stream, predicate, false), nil
+}
+
+func drop(objects []ValueObject) (ValueObject, error) {
+	if len(objects) != 2 {
+		return nil, fmt.Errorf("expected 2 values, got %d", len(objects))
+	}
+
+	intVal, ok := objects[0].(*Integer)
+	if !ok {
+		return nil, fmt.Errorf("fist argument of drop must be an integer, got %s", objects[0])
+	}
+
+	stream, ok := objects[1].(Stream)
+	if !ok {
+		return nil, fmt.Errorf("second argument of drop must be a stream, got %s", objects[1])
+	}
+
+	return NewDroppedStream(stream, intVal.Value, false), nil
 }
 
 func mapFunc(objects []ValueObject) (ValueObject, error) {

@@ -620,7 +620,26 @@ func TestRun(t *testing.T) {
 			},
 			want: &Vector{elements: []ValueObject{&Integer{8}, &Integer{64}}},
 		},
-}
+		{
+			name: "drop works for stream",
+			args: args{
+				code: `
+				(def (even? x) (= (% x 2) 0))
+				(def lst '(1 2 3 4 5))
+				(take 3 (drop 1 (filter even? (list->stream lst))))`,
+			},
+			want: &Vector{elements: []ValueObject{&Integer{4}}},
+		},
+		{
+			name: "drop-while works for stream",
+			args: args{
+				code: `
+				(def lst '(1 2 3 4 5))
+				(take 3 (drop-while (lambda (x) (< x 4)) (list->stream lst)))`,
+			},
+			want: &Vector{elements: []ValueObject{&Integer{4}, &Integer{5}}},
+		},
+	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := Run(tt.args.code)
