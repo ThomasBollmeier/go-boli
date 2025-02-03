@@ -61,6 +61,7 @@ func NewGlobalEnv() *Environment {
 	ret.SetGlobalBuiltinFunc("stream?", isStream)
 
 	ret.SetGlobalBuiltinFunc("filter", filter)
+	ret.SetGlobalBuiltinFunc("map", mapFunc)
 	ret.SetGlobalBuiltinFunc("take", take)
 
 	ret.SetGlobalBuiltinFunc("display", func(objects []ValueObject) (ValueObject, error) {

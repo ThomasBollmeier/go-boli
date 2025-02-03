@@ -42,22 +42,6 @@ func (stream *ListStream) Next() (ValueObject, bool) {
 	return pair.first, true
 }
 
-func isStream(objects []ValueObject) (ValueObject, error) {
-	if len(objects) != 1 {
-		return nil, fmt.Errorf("expected 1 value, got %d", len(objects))
-	}
-
-	return NewBoolean(objects[0].GetValueType() == ValueStream), nil
-}
-
-func listToStream(objects []ValueObject) (ValueObject, error) {
-	if len(objects) != 1 {
-		return nil, fmt.Errorf("expected 1 value, got %d", len(objects))
-	}
-
-	return NewListStream(objects[0])
-}
-
 type FilteredStream struct {
 	stream      Stream
 	predicateFn Callable
@@ -96,6 +80,74 @@ func (filtered *FilteredStream) Next() (ValueObject, bool) {
 			return value, true
 		}
 	}
+}
+
+type MappedStream struct {
+	stream Stream
+	mapFn  Callable
+}
+
+func NewMappedStream(stream Stream, mapFn Callable) *MappedStream {
+	return &MappedStream{
+		stream,
+		mapFn,
+	}
+}
+
+func (mapped *MappedStream) GetValueType() ValueType {
+	return ValueStream
+}
+
+func (mapped *MappedStream) String() string {
+	return "<mapped stream>"
+}
+
+func (mapped *MappedStream) Clone() Stream {
+	return NewMappedStream(mapped.stream.Clone(), mapped.mapFn)
+}
+
+func (mapped *MappedStream) Next() (ValueObject, bool) {
+	value, ok := mapped.stream.Next()
+	if !ok {
+		return nil, false
+	}
+	mappedVal, err := Call(mapped.mapFn, []ValueObject{value})
+	if err != nil {
+		return nil, false
+	}
+	return mappedVal, true
+}
+
+func isStream(objects []ValueObject) (ValueObject, error) {
+	if len(objects) != 1 {
+		return nil, fmt.Errorf("expected 1 value, got %d", len(objects))
+	}
+
+	return NewBoolean(objects[0].GetValueType() == ValueStream), nil
+}
+
+func listToStream(objects []ValueObject) (ValueObject, error) {
+	if len(objects) != 1 {
+		return nil, fmt.Errorf("expected 1 value, got %d", len(objects))
+	}
+
+	return NewListStream(objects[0])
+}
+
+func mapFunc(objects []ValueObject) (ValueObject, error) {
+	if len(objects) != 2 {
+		return nil, fmt.Errorf("expected 2 values, got %d", len(objects))
+	}
+	mapFn, ok := objects[0].(Callable)
+	if !ok {
+		return nil, fmt.Errorf("first argument of map must be a function")
+	}
+	stream, ok := objects[1].(Stream)
+	if !ok {
+		return nil, fmt.Errorf("second argument of map must be a stream")
+	}
+
+	return NewMappedStream(stream, mapFn), nil
 }
 
 func filter(objects []ValueObject) (ValueObject, error) {
