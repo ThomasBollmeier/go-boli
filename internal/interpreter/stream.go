@@ -159,9 +159,9 @@ func (dropped *DroppedStream) Next() (ValueObject, bool) {
 }
 
 type DroppedWhileStream struct {
-	stream   Stream
+	stream    Stream
 	predicate Callable
-	dropDone bool
+	dropDone  bool
 }
 
 func NewDroppedWhileStream(stream Stream, predicate Callable, dropDone bool) *DroppedWhileStream {
@@ -181,9 +181,9 @@ func (dropped *DroppedWhileStream) String() string {
 }
 
 func (dropped *DroppedWhileStream) Clone() Stream {
-	return NewDroppedWhileStream(dropped.stream.Clone(), 
-															 dropped.predicate, 
-															 dropped.dropDone)
+	return NewDroppedWhileStream(dropped.stream.Clone(),
+		dropped.predicate,
+		dropped.dropDone)
 }
 
 func (dropped *DroppedWhileStream) Next() (ValueObject, bool) {
@@ -224,7 +224,6 @@ func listToStream(objects []ValueObject) (ValueObject, error) {
 
 	return NewListStream(objects[0])
 }
-
 
 func dropWhile(objects []ValueObject) (ValueObject, error) {
 	if len(objects) != 2 {
@@ -312,6 +311,40 @@ func take(objects []ValueObject) (ValueObject, error) {
 	for i := 0; i < n; i++ {
 		element, ok := stream.Next()
 		if !ok {
+			break
+		}
+		elements = append(elements, element)
+	}
+
+	return NewVector(elements), nil
+}
+
+func takeWhile(objects []ValueObject) (ValueObject, error) {
+	if len(objects) != 2 {
+		return nil, fmt.Errorf("expected 2 values, got %d", len(objects))
+	}
+
+	predicate, ok := objects[0].(Callable)
+	if !ok {
+		return nil, fmt.Errorf("first argument of take-while must be a function")
+	}
+	if objects[1].GetValueType() != ValueStream {
+		return nil, fmt.Errorf("second argument of take-while must be a stream")
+	}
+
+	stream := objects[1].(Stream).Clone()
+
+	var elements []ValueObject
+	for {
+		element, ok := stream.Next()
+		if !ok {
+			break
+		}
+		predVal, err := Call(predicate, []ValueObject{element})
+		if err != nil {
+			return nil, err
+		}
+		if !isTruthy(predVal) {
 			break
 		}
 		elements = append(elements, element)

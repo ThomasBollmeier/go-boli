@@ -600,6 +600,15 @@ func TestRun(t *testing.T) {
 			want: &Vector{elements: []ValueObject{&Integer{1}}},
 		},
 		{
+			name: "take-while works",
+			args: args{
+				code: `
+				(def lst '(1 2 3 4))
+				(take-while (lambda (x) (< x 2)) (list->stream lst))`,
+			},
+			want: &Vector{elements: []ValueObject{&Integer{1}}},
+		},
+		{
 			name: "filter works for stream",
 			args: args{
 				code: `

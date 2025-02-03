@@ -65,6 +65,7 @@ func NewGlobalEnv() *Environment {
 	ret.SetGlobalBuiltinFunc("drop", drop)
 	ret.SetGlobalBuiltinFunc("drop-while", dropWhile)
 	ret.SetGlobalBuiltinFunc("take", take)
+	ret.SetGlobalBuiltinFunc("take-while", takeWhile)
 
 	ret.SetGlobalBuiltinFunc("display", func(objects []ValueObject) (ValueObject, error) {
 		if len(objects) != 1 {
