@@ -94,6 +94,16 @@ func TestSequenceFunctions(t *testing.T) {
 			want: "(vector 2 4 6)",
 		},
 		{
+			name: "filter an iterator stream",
+			args: args{
+				code: `
+					(def (even? x) (= 0 (% x 2)))
+					(def s (iterator 1 (lambda (x) (+ x 1))))
+					(take 3 (filter even? s))`,
+			},
+			want: "(vector 2 4 6)",
+		},
+		{
 			name: "map a list",
 			args: args{
 				code: `

@@ -57,6 +57,7 @@ func NewGlobalEnv() *Environment {
 	ret.SetGlobalBuiltinFunc("vector?", isVec)
 	ret.SetGlobalBuiltinFunc("vector-ref", vectorGetRef)
 
+	ret.SetGlobalBuiltinFunc("iterator", iterator)
 	ret.SetGlobalBuiltinFunc("list->stream", listToStream)
 	ret.SetGlobalBuiltinFunc("stream?", isStream)
 

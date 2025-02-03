@@ -10,6 +10,44 @@ type Stream interface {
 	Next() (ValueObject, bool)
 }
 
+type IterStream struct {
+	current ValueObject
+	done    bool
+	nextFn  Callable
+}
+
+func NewIterStream(
+	current ValueObject,
+	done bool,
+	nextFn Callable) *IterStream {
+	return &IterStream{
+		current,
+		done,
+		nextFn,
+	}
+}
+
+func (it *IterStream) Clone() Stream {
+	return NewIterStream(it.current, it.done, it.nextFn)
+}
+
+func (it *IterStream) String() string {
+	return "<iterator stream>"
+}
+
+func (it *IterStream) Next() (ValueObject, bool) {
+	if it.done {
+		return nil, false
+	}
+	var err error
+	ret := it.current
+	it.current, err = Call(it.nextFn, []ValueObject{it.current})
+	if err != nil || it.current.GetValueType() == ValueNil {
+		it.done = true
+	}
+	return ret, true
+}
+
 type ListStream struct {
 	list ValueObject
 }
@@ -276,4 +314,16 @@ func listToStream(objects []ValueObject) (ValueObject, error) {
 	}
 
 	return NewStreamSeq(listStream), nil
+}
+
+func iterator(objects []ValueObject) (ValueObject, error) {
+	if len(objects) != 2 {
+		return nil, fmt.Errorf("iterator expects 2 arguments, got %d", len(objects))
+	}
+	nextFn, ok := objects[1].(Callable)
+	if !ok {
+		return nil, fmt.Errorf("expected a function as second argument of iterator")
+	}
+
+	return NewStreamSeq(NewIterStream(objects[0], false, nextFn)), nil
 }
