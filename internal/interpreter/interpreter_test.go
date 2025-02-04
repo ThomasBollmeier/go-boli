@@ -518,6 +518,26 @@ func TestRun(t *testing.T) {
 			want: &Integer{2},
 		},
 		{
+			name: "vector-set! works",
+			args: args{
+				code: `
+					(def v (vector 1 2 3))
+					(vector-set! v 1 "foo")
+					(vector-ref v 1)`,
+			},
+			want: &Str{"foo"},
+		},
+		{
+			name: "vector-append! works",
+			args: args{
+				code: `
+					(def v (vector 1 2 3))
+					(vector-append! v "foo")
+					(vector-ref v 3)`,
+			},
+			want: &Str{"foo"},
+		},
+		{
 			name: "vector? works",
 			args: args{
 				code: `
@@ -630,7 +650,7 @@ func TestRun(t *testing.T) {
 			},
 			want: &Vector{elements: []ValueObject{&Str{"foo"}}},
 		},
-	{
+		{
 			name: "take works",
 			args: args{
 				code: `
