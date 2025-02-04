@@ -300,6 +300,10 @@ func (s *Str) String() string {
 	return "\"" + s.Value + "\""
 }
 
+func (s *Str) HashStr() string {
+	return fmt.Sprintf("%d-%s", s.GetValueType(), s.Value)
+}
+
 type Symbol struct {
 	Value string
 }
@@ -314,6 +318,10 @@ func (s *Symbol) GetValueType() ValueType {
 
 func (s *Symbol) String() string {
 	return s.Value
+}
+
+func (s *Symbol) HashStr() string {
+	return fmt.Sprintf("%d-%s", s.GetValueType(), s.Value)
 }
 
 type QuotedValue struct {

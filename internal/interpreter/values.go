@@ -21,6 +21,7 @@ const (
 	ValueStream
 	ValueStructType
 	ValueStruct
+	ValueHashTable
 	ValueInvalid
 )
 

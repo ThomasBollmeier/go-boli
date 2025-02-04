@@ -591,6 +591,46 @@ func TestRun(t *testing.T) {
 			want: &Str{"Hallo Welt!"},
 		},
 		{
+			name: "evaluate hash table",
+			args: args{
+				code: `
+				(def ht (create-hash-table))
+				ht`,
+			},
+			want: &HashTable{entries: make(map[string]HashEntry)},
+		},
+		{
+			name: "evaluate hash-set!",
+			args: args{
+				code: `
+				(def ht (create-hash-table))
+				(hash-set! ht "foo" 42)
+				(hash-get ht "foo")`,
+			},
+			want: &Integer{42},
+		},
+		{
+			name: "evaluate hash-remove!",
+			args: args{
+				code: `
+				(def ht (create-hash-table))
+				(hash-set! ht "foo" 42)
+				(hash-remove! ht "foo")
+				(hash-contains? ht "foo")`,
+			},
+			want: &Boolean{false},
+		},
+		{
+			name: "evaluate hash-keys",
+			args: args{
+				code: `
+				(def ht (create-hash-table))
+				(hash-set! ht "foo" 42)
+				(hash-keys ht)`,
+			},
+			want: &Vector{elements: []ValueObject{&Str{"foo"}}},
+		},
+	{
 			name: "take works",
 			args: args{
 				code: `

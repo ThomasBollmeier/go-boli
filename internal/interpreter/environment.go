@@ -68,6 +68,14 @@ func NewGlobalEnv() *Environment {
 	ret.SetGlobalBuiltinFunc("take", take)
 	ret.SetGlobalBuiltinFunc("take-while", takeWhile)
 
+	ret.SetGlobalBuiltinFunc("create-hash-table", createHashTable)
+	ret.SetGlobalBuiltinFunc("hash-length", hashLength)
+	ret.SetGlobalBuiltinFunc("hash-keys", hashKeys)
+	ret.SetGlobalBuiltinFunc("hash-contains?", hashContains)
+	ret.SetGlobalBuiltinFunc("hash-get", hashGet)
+	ret.SetGlobalBuiltinFunc("hash-set!", hashSetBang)
+	ret.SetGlobalBuiltinFunc("hash-remove!", hashRemoveBang)
+
 	ret.SetGlobalBuiltinFunc("display", func(objects []ValueObject) (ValueObject, error) {
 		if len(objects) != 1 {
 			return nil, fmt.Errorf("expected single arg, got %d", len(objects))
