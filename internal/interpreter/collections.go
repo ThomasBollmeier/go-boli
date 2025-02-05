@@ -1,6 +1,7 @@
 package interpreter
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -53,12 +54,12 @@ func (p *Pair) String() string {
 	return fmt.Sprintf("(cons %s %s)", p.first, p.second)
 }
 
-func (p *Pair) Car() ValueObject {
-	return p.first
+func (p *Pair) Car() (ValueObject, error) {
+	return p.first, nil
 }
 
-func (p *Pair) Cdr() ValueObject {
-	return p.second
+func (p *Pair) Cdr() (ValueObject, error) {
+	return p.second, nil
 }
 
 func (p *Pair) IsList() *Boolean {
@@ -190,6 +191,27 @@ func (p *Pair) DropWhile(pred Callable) (Sequence, error) {
 	return elementsToSequence(elements), nil
 }
 
+func (p *Pair) Count() int {
+	ret := 0
+	var curr ValueObject = p
+loop:
+	for {
+		switch curr.GetValueType() {
+		case ValuePair:
+			ret++
+			pair := curr.(*Pair)
+			curr = pair.second
+		case ValueNil:
+			break loop
+		default:
+			ret++
+			break loop
+		}
+	}
+
+	return ret
+}
+
 func elementsToSequence(elements []ValueObject) Sequence {
 	if len(elements) == 0 {
 		return GetNilObject()
@@ -238,6 +260,20 @@ func (v *Vector) Append(element ValueObject) {
 
 func (v *Vector) GetElements() []ValueObject {
 	return v.elements
+}
+
+func (v *Vector) Car() (ValueObject, error) {
+	if len(v.elements) == 0 {
+		return nil, errors.New("cannot car from empty vector")
+	}
+	return v.elements[0], nil
+}
+
+func (v *Vector) Cdr() (ValueObject, error) {
+	if len(v.elements) == 0 {
+		return nil, errors.New("cannot cdr from empty vector")
+	}
+	return NewVector(v.elements[1:]), nil
 }
 
 func (v *Vector) Take(n int) (Sequence, error) {
@@ -327,11 +363,27 @@ func (v *Vector) DropWhile(pred Callable) (Sequence, error) {
 	return NewVector(elements), nil
 }
 
+func (v *Vector) Count() int {
+	return len(v.elements)
+}
+
 func vector(values []ValueObject) (ValueObject, error) {
 	return NewVector(values), nil
 }
 
+<<<<<<< HEAD
 func vectorGetRef(values []ValueObject) (ValueObject, error) {
+=======
+func isVec(values []ValueObject) (ValueObject, error) {
+	if len(values) != 1 {
+		return nil, fmt.Errorf("expected single arg, got %d", len(values))
+	}
+
+	return NewBoolean(values[0].GetValueType() == ValueVector), nil
+}
+
+func vectorRef(values []ValueObject) (ValueObject, error) {
+>>>>>>> remotes/origin/main
 	if len(values) != 2 {
 		return nil, fmt.Errorf("expected two args, got %d", len(values))
 	}
@@ -359,34 +411,52 @@ func vectorGetRef(values []ValueObject) (ValueObject, error) {
 	return v.elements[idx], nil
 }
 
-func car(values []ValueObject) (ValueObject, error) {
-	if len(values) != 1 {
-		return nil, fmt.Errorf("expected single arg, got %d", len(values))
+func vectorSetBang(values []ValueObject) (ValueObject, error) {
+	if len(values) != 3 {
+		return nil, fmt.Errorf("expected three args, got %d", len(values))
+	}
+	var v *Vector
+	first := values[0]
+	switch first.GetValueType() {
+	case ValueVector:
+		v = first.(*Vector)
+	default:
+		return nil, fmt.Errorf("expected vector as first arg")
+	}
+	second := values[1]
+	if second.GetValueType() != ValueInteger {
+		return nil, fmt.Errorf("expected integer as second arg")
+	}
+	idx := second.(*Integer).Value
+	if idx < 0 {
+		return nil, fmt.Errorf("expected positive integer as second arg")
 	}
 
-	value := values[0]
-	switch value.GetValueType() {
-	case ValuePair:
-		pair := value.(*Pair)
-		return pair.Car(), nil
-	default:
-		return nil, fmt.Errorf("expected pair")
+	if idx >= len(v.elements) {
+		return nil, fmt.Errorf("invalid index")
 	}
+
+	v.elements[idx] = values[2]
+
+	return GetNilObject(), nil
 }
 
-func cdr(values []ValueObject) (ValueObject, error) {
-	if len(values) != 1 {
-		return nil, fmt.Errorf("expected single arg, got %d", len(values))
+func vectorAppend(values []ValueObject) (ValueObject, error) {
+	if len(values) != 2 {
+		return nil, fmt.Errorf("expected two args, got %d", len(values))
+	}
+	var v *Vector
+	first := values[0]
+	switch first.GetValueType() {
+	case ValueVector:
+		v = first.(*Vector)
+	default:
+		return nil, fmt.Errorf("expected vector as first arg")
 	}
 
-	value := values[0]
-	switch value.GetValueType() {
-	case ValuePair:
-		pair := value.(*Pair)
-		return pair.Cdr(), nil
-	default:
-		return nil, fmt.Errorf("expected pair")
-	}
+	v.elements = append(v.elements, values[1])
+
+	return GetNilObject(), nil
 }
 
 func isList(values []ValueObject) (ValueObject, error) {
@@ -425,7 +495,7 @@ func list(values []ValueObject) (ValueObject, error) {
 	return ret, nil
 }
 
-func listGetRef(values []ValueObject) (ValueObject, error) {
+func listRef(values []ValueObject) (ValueObject, error) {
 	if len(values) != 2 {
 		return nil, fmt.Errorf("expected two args, got %d", len(values))
 	}
@@ -450,14 +520,15 @@ func listGetRef(values []ValueObject) (ValueObject, error) {
 	}
 
 	var curr ValueObject = pair
-	for idx > 0 {
+	for {
 		p, ok := curr.(*Pair)
 		if !ok {
 			return nil, fmt.Errorf("invalid index")
 		}
+		if idx == 0 {
+			return p.first, nil
+		}
 		curr = p.second
 		idx--
 	}
-
-	return curr.(*Pair).first, nil
 }
