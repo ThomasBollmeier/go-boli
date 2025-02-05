@@ -8,17 +8,17 @@ import (
 )
 
 func main() {
-	switch len(os.Args) {
+	args := os.Args[1:]
+	switch len(args) {
 	case 0:
-		fmt.Printf("Usage: %s <file> [args...]\n", os.Args[0])
-	case 1:
 		internal.Repl()
 	default:
-		source, err := interpreter.NewFileSourceFactory().GetSource(os.Args[1])
+		filePath := args[0]
+		source, err := interpreter.NewFileSourceFactory().GetSource(filePath)
 		if err != nil {
 			panic(err)
 		}
-		value, err := interpreter.RunSource(source, os.Args[2:])
+		value, err := interpreter.RunSource(source, args[1:])
 		if err != nil {
 			panic(err)
 		}

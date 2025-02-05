@@ -110,7 +110,7 @@ func (interpreter *Interpreter) evalCall(call *frontend.AST) (ValueObject, error
 	}
 	callable, ok := callee.(Callable)
 	if !ok {
-		return nil, errors.New("callee is not a callable")
+		return nil, fmt.Errorf("callee '%s' is not a callable", callee)
 	}
 
 	var arguments []ValueObject

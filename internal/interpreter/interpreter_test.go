@@ -228,7 +228,10 @@ func TestRun(t *testing.T) {
 			args: args{
 				code: `
 					(def answer 41)
-  					(set! answer 42)
+					(if (= answer 41)
+  						(block
+							(set! answer 42))
+						nil)
 					answer`,
 			},
 			want: &Integer{42},

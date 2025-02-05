@@ -120,7 +120,7 @@ func (p *Parser) parseExpr(token *Token) (*AST, error) {
 			return nil, errors.New("spreads are only allowed as call args")
 		}
 	default:
-		return nil, errors.New("unknown expression")
+		return nil, errors.New("unknown expression: '" + token.Lexeme + "'")
 	}
 }
 
@@ -176,6 +176,9 @@ func (p *Parser) parseCall(start *Token) (*AST, error) {
 		return nil, err
 	}
 	first, err = p.parseExpr(firstToken)
+	if err != nil {
+		return nil, err
+	}
 
 	token, err = p.scanner.Peek()
 	if err != nil {
