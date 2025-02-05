@@ -24,6 +24,14 @@ func (n *NilObject) String() string {
 	return "nil"
 }
 
+func (n *NilObject) Car() (ValueObject, error) {
+	return n, nil
+}
+
+func (n *NilObject) Cdr() (ValueObject, error) {
+	return n, nil
+}
+
 func (n *NilObject) Take(int) (Sequence, error) {
 	return n, nil
 }
@@ -46,6 +54,10 @@ func (n *NilObject) Drop(int) (Sequence, error) {
 
 func (n *NilObject) DropWhile(Callable) (Sequence, error) {
 	return n, nil
+}
+
+func (n *NilObject) Count() int {
+	return 0
 }
 
 type Boolean struct {

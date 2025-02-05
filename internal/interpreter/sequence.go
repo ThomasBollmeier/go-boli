@@ -1,15 +1,47 @@
 package interpreter
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Sequence interface {
 	ValueObject
+	Car() (ValueObject, error)
+	Cdr() (ValueObject, error)
 	Take(n int) (Sequence, error)
 	TakeWhile(pred Callable) (Sequence, error)
 	Filter(pred Callable) (Sequence, error)
 	Map(fn Callable) (Sequence, error)
 	Drop(n int) (Sequence, error)
 	DropWhile(pred Callable) (Sequence, error)
+}
+
+type LimitedSequence interface {
+	Sequence
+	Count() int
+}
+
+func car(objects []ValueObject) (ValueObject, error) {
+	if len(objects) != 1 {
+		return nil, fmt.Errorf("expected single arg, got %d", len(objects))
+	}
+
+	sequence, ok := objects[0].(Sequence)
+	if !ok {
+		return nil, fmt.Errorf("car requires a sequence")
+	}
+	return sequence.Car()
+}
+
+func cdr(objects []ValueObject) (ValueObject, error) {
+	if len(objects) != 1 {
+		return nil, fmt.Errorf("expected single arg, got %d", len(objects))
+	}
+	sequence, ok := objects[0].(Sequence)
+	if !ok {
+		return nil, fmt.Errorf("cdr requires a sequence")
+	}
+	return sequence.Cdr()
 }
 
 func take(objects []ValueObject) (ValueObject, error) {
@@ -112,4 +144,28 @@ func dropWhile(objects []ValueObject) (ValueObject, error) {
 	}
 
 	return sequence.DropWhile(pred)
+}
+
+func count(objects []ValueObject) (ValueObject, error) {
+	if len(objects) != 1 {
+		return nil, fmt.Errorf("expected 1 values, got %d", len(objects))
+	}
+	lseq, ok := objects[0].(LimitedSequence)
+	if !ok {
+		return nil, fmt.Errorf("first argument of count must be a limited sequence")
+	}
+
+	return NewInteger(lseq.Count()), nil
+}
+
+func isEmpty(objects []ValueObject) (ValueObject, error) {
+	if len(objects) != 1 {
+		return nil, fmt.Errorf("expected 1 values, got %d", len(objects))
+	}
+	lseq, ok := objects[0].(LimitedSequence)
+	if !ok {
+		return nil, fmt.Errorf("first argument of empty? must be a limited sequence")
+	}
+
+	return NewBoolean(lseq.Count() == 0), nil
 }

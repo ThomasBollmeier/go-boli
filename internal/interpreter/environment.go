@@ -69,6 +69,8 @@ func NewGlobalEnv() *Environment {
 	ret.SetGlobalBuiltinFunc("drop-while", dropWhile)
 	ret.SetGlobalBuiltinFunc("take", take)
 	ret.SetGlobalBuiltinFunc("take-while", takeWhile)
+	ret.SetGlobalBuiltinFunc("count", count)
+	ret.SetGlobalBuiltinFunc("empty?", isEmpty)
 
 	ret.SetGlobalBuiltinFunc("create-hash-table", createHashTable)
 	ret.SetGlobalBuiltinFunc("hash-length", hashLength)

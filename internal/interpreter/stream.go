@@ -1,6 +1,7 @@
 package interpreter
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -241,6 +242,22 @@ func (seq *StreamSeq) GetValueType() ValueType {
 
 func (seq *StreamSeq) String() string {
 	return seq.stream.String()
+}
+
+func (seq *StreamSeq) Car() (ValueObject, error) {
+	first, err := seq.Take(1)
+	if err != nil {
+		return nil, err
+	}
+	firstVec, _ := first.(*Vector)
+	if len(firstVec.elements) == 0 {
+		return nil, errors.New("stream has no elements")
+	}
+	return firstVec.elements[0], nil
+}
+
+func (seq *StreamSeq) Cdr() (ValueObject, error) {
+	return seq.Drop(1)
 }
 
 func (seq *StreamSeq) Take(n int) (Sequence, error) {
