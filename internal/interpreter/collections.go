@@ -371,19 +371,7 @@ func vector(values []ValueObject) (ValueObject, error) {
 	return NewVector(values), nil
 }
 
-<<<<<<< HEAD
-func vectorGetRef(values []ValueObject) (ValueObject, error) {
-=======
-func isVec(values []ValueObject) (ValueObject, error) {
-	if len(values) != 1 {
-		return nil, fmt.Errorf("expected single arg, got %d", len(values))
-	}
-
-	return NewBoolean(values[0].GetValueType() == ValueVector), nil
-}
-
 func vectorRef(values []ValueObject) (ValueObject, error) {
->>>>>>> remotes/origin/main
 	if len(values) != 2 {
 		return nil, fmt.Errorf("expected two args, got %d", len(values))
 	}
