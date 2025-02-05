@@ -46,7 +46,6 @@ func NewGlobalEnv() *Environment {
 
 	ret.SetGlobalBuiltinFunc("car", car)
 	ret.SetGlobalBuiltinFunc("cdr", cdr)
-	ret.SetGlobalBuiltinFunc("pair?", isPair)
 	ret.SetGlobalBuiltinFunc("cons", cons)
 
 	ret.SetGlobalBuiltinFunc("list", list)
@@ -54,7 +53,6 @@ func NewGlobalEnv() *Environment {
 	ret.SetGlobalBuiltinFunc("list-ref", listGetRef)
 
 	ret.SetGlobalBuiltinFunc("vector", vector)
-	ret.SetGlobalBuiltinFunc("vector?", isVec)
 	ret.SetGlobalBuiltinFunc("vector-ref", vectorGetRef)
 
 	ret.SetGlobalBuiltinFunc("iterator", iterator)
@@ -76,6 +74,22 @@ func NewGlobalEnv() *Environment {
 	ret.SetGlobalBuiltinFunc("hash-set!", hashSetBang)
 	ret.SetGlobalBuiltinFunc("hash-remove!", hashRemoveBang)
 
+	// type checkers:
+	
+	ret.SetGlobalBuiltinFunc("nil?", makeTypeCheckFunc("nil?", ValueNil))
+	ret.SetGlobalBuiltinFunc("int?", makeTypeCheckFunc("int?", ValueInteger))
+	ret.SetGlobalBuiltinFunc("real?", makeTypeCheckFunc("real?", ValueReal))
+	ret.SetGlobalBuiltinFunc("rational?", makeTypeCheckFunc("rational?", ValueRational))
+	ret.SetGlobalBuiltinFunc("boolean?", makeTypeCheckFunc("boolean?", ValueBoolean))
+	ret.SetGlobalBuiltinFunc("string?", makeTypeCheckFunc("string?", ValueString))
+	ret.SetGlobalBuiltinFunc("symbol?", makeTypeCheckFunc("symbol?", ValueSymbol))
+	ret.SetGlobalBuiltinFunc("pair?", makeTypeCheckFunc("pair?", ValuePair))
+	ret.SetGlobalBuiltinFunc("vector?", makeTypeCheckFunc("vector?", ValueVector))
+	ret.SetGlobalBuiltinFunc("stream?", makeTypeCheckFunc("stream?", ValueStream))
+	ret.SetGlobalBuiltinFunc("hash-table?", makeTypeCheckFunc("hash-table?", ValueHashTable))
+
+	// io functions:
+	
 	ret.SetGlobalBuiltinFunc("display", func(objects []ValueObject) (ValueObject, error) {
 		if len(objects) != 1 {
 			return nil, fmt.Errorf("expected single arg, got %d", len(objects))

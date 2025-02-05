@@ -331,14 +331,6 @@ func vector(values []ValueObject) (ValueObject, error) {
 	return NewVector(values), nil
 }
 
-func isVec(values []ValueObject) (ValueObject, error) {
-	if len(values) != 1 {
-		return nil, fmt.Errorf("expected single arg, got %d", len(values))
-	}
-
-	return NewBoolean(values[0].GetValueType() == ValueVector), nil
-}
-
 func vectorGetRef(values []ValueObject) (ValueObject, error) {
 	if len(values) != 2 {
 		return nil, fmt.Errorf("expected two args, got %d", len(values))
@@ -394,21 +386,6 @@ func cdr(values []ValueObject) (ValueObject, error) {
 		return pair.Cdr(), nil
 	default:
 		return nil, fmt.Errorf("expected pair")
-	}
-}
-
-func isPair(values []ValueObject) (ValueObject, error) {
-	if len(values) != 1 {
-		return nil, fmt.Errorf("expected single arg, got %d", len(values))
-	}
-
-	value := values[0]
-	switch value.GetValueType() {
-	case ValuePair:
-		return NewBoolean(true), nil
-	default:
-
-		return NewBoolean(false), nil
 	}
 }
 
