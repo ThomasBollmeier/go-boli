@@ -204,7 +204,6 @@ func (interpreter *Interpreter) evalReal(real *frontend.AST) (ValueObject, error
 
 func (interpreter *Interpreter) evalString(str *frontend.AST) (ValueObject, error) {
 	text := str.GetValue()[1 : len(str.GetValue())-1]
-	text = strings.Replace(text, "\\\"", "\"", -1)
 	return NewStr(text), nil
 }
 

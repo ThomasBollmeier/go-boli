@@ -249,18 +249,40 @@ func (s *Scanner) isValidIdentChar(ch rune) bool {
 
 func (s *Scanner) scanString(firstChar rune, row, col int) (*Token, error) {
 	lexeme := string(firstChar)
-	prevChar := rune(0)
+	escapeActive := false
 
+loop:
 	for {
 		ch, err := s.advanceChar()
 		if err != nil {
 			return nil, err
 		}
-		lexeme += string(ch)
-		if ch == firstChar && prevChar != '\\' {
-			break
+		if !escapeActive {
+			switch ch {
+			case firstChar:
+				lexeme += string(ch)
+				break loop
+			case '\\':
+				escapeActive = true
+			default:
+				lexeme += string(ch)
+			}
+		} else {
+			switch ch {
+			case firstChar:
+				lexeme += string(ch)
+			case 't':
+				lexeme += string('\t')
+			case 'n':
+				lexeme += string('\n')
+			case '\\':
+				lexeme += string(ch)
+			default:
+				lexeme += string('\\')
+				lexeme += string(ch)
+			}
+			escapeActive = false
 		}
-		prevChar = ch
 	}
 
 	return NewToken(TokString, lexeme, row, col), nil

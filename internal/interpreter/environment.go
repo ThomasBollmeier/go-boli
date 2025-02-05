@@ -44,6 +44,17 @@ func NewGlobalEnv() *Environment {
 		return NewBoolean(!isTruthy(objects[0])), nil
 	})
 
+	ret.SetGlobalBuiltinFunc("string", stringConv)
+	ret.SetGlobalBuiltinFunc("string-sub", stringSub)
+	ret.SetGlobalBuiltinFunc("string-replace", stringReplace)
+	ret.SetGlobalBuiltinFunc("string-concat", stringConcat)
+	ret.SetGlobalBuiltinFunc("string-lower", stringLower)
+	ret.SetGlobalBuiltinFunc("string-upper", stringUpper)
+	ret.SetGlobalBuiltinFunc("string-count", stringCount)
+	ret.SetGlobalBuiltinFunc("string=?", stringEqual)
+	ret.SetGlobalBuiltinFunc("string->int", stringToInt)
+	ret.SetGlobalBuiltinFunc("string->real", stringToReal)
+
 	ret.SetGlobalBuiltinFunc("car", car)
 	ret.SetGlobalBuiltinFunc("cdr", cdr)
 	ret.SetGlobalBuiltinFunc("cons", cons)
@@ -79,7 +90,6 @@ func NewGlobalEnv() *Environment {
 	ret.SetGlobalBuiltinFunc("hash-remove!", hashRemoveBang)
 
 	// type checkers:
-	
 	ret.SetGlobalBuiltinFunc("nil?", makeTypeCheckFunc("nil?", ValueNil))
 	ret.SetGlobalBuiltinFunc("int?", makeTypeCheckFunc("int?", ValueInteger))
 	ret.SetGlobalBuiltinFunc("real?", makeTypeCheckFunc("real?", ValueReal))
@@ -93,21 +103,11 @@ func NewGlobalEnv() *Environment {
 	ret.SetGlobalBuiltinFunc("hash-table?", makeTypeCheckFunc("hash-table?", ValueHashTable))
 
 	// io functions:
-	
-	ret.SetGlobalBuiltinFunc("display", func(objects []ValueObject) (ValueObject, error) {
-		if len(objects) != 1 {
-			return nil, fmt.Errorf("expected single arg, got %d", len(objects))
-		}
-		fmt.Print(objects[0])
-		return GetNilObject(), nil
-	})
-	ret.SetGlobalBuiltinFunc("displayln", func(objects []ValueObject) (ValueObject, error) {
-		if len(objects) != 1 {
-			return nil, fmt.Errorf("expected single arg, got %d", len(objects))
-		}
-		fmt.Println(objects[0])
-		return GetNilObject(), nil
-	})
+	ret.SetGlobalBuiltinFunc("read-line", readLine)
+	ret.SetGlobalBuiltinFunc("display", display)
+	ret.SetGlobalBuiltinFunc("displayln", displayln)
+	ret.SetGlobalBuiltinFunc("write", write)
+	ret.SetGlobalBuiltinFunc("writeln", writeln)
 
 	// module handling:
 	ret.SetGlobalBuiltinFunc("require", makeRequireFn(ret))

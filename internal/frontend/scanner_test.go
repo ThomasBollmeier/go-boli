@@ -105,7 +105,7 @@ func TestScanner_Advance(t *testing.T) {
 			fields: fields{
 				stream: *NewBufferedStream(NewCharStreamString("\"Thomas sagt: \\\"Hallo!\\\"\"")),
 			},
-			want: NewToken(TokString, "\"Thomas sagt: \\\"Hallo!\\\"\"", 1, 1),
+			want: NewToken(TokString, "\"Thomas sagt: \"Hallo!\"\"", 1, 1),
 		},
 		{
 			name: "Get a symbol",
