@@ -1,0 +1,9 @@
+(def (make-greeter prefix suffix)
+  (lambda (name)
+    (string-concat prefix name suffix)))
+
+(def sag-guten-tag (make-greeter "Guten Tag, " "!"))
+
+(def name (read-line "Wie heißen Sie? "))
+
+(writeln (sag-guten-tag name))
