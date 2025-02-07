@@ -22,6 +22,7 @@ const (
 	ValueStructType
 	ValueStruct
 	ValueHashTable
+	ValueHashSet
 	ValueInvalid
 )
 

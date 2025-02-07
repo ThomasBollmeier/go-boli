@@ -165,6 +165,10 @@ func (i *Integer) LessThanOrEqual(other *Integer) bool {
 	return i.Value <= other.Value
 }
 
+func (i *Integer) HashStr() string {
+	return fmt.Sprintf("%d-%d", i.GetValueType(), i.Value)
+}
+
 type Rational struct {
 	Numerator   int
 	Denominator int

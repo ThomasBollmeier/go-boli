@@ -89,6 +89,13 @@ func NewGlobalEnv() *Environment {
 	ret.SetGlobalBuiltinFunc("hash-set!", hashSetBang)
 	ret.SetGlobalBuiltinFunc("hash-remove!", hashRemoveBang)
 
+	ret.SetGlobalBuiltinFunc("create-set", createSet)
+	ret.SetGlobalBuiltinFunc("set-add!", setAddBang)
+	ret.SetGlobalBuiltinFunc("set-remove!", setRemoveBang)
+	ret.SetGlobalBuiltinFunc("set-contains?", setContains)
+	ret.SetGlobalBuiltinFunc("set-length", setLength)
+	ret.SetGlobalBuiltinFunc("set-elements", setElements)
+
 	// type checkers:
 	ret.SetGlobalBuiltinFunc("nil?", makeTypeCheckFunc("nil?", ValueNil))
 	ret.SetGlobalBuiltinFunc("int?", makeTypeCheckFunc("int?", ValueInteger))
