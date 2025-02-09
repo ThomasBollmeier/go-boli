@@ -581,6 +581,15 @@ func TestRun(t *testing.T) {
 			},
 		},
 		{
+			name: "structure type check works",
+			args: args{
+				code: `
+					(def-struct person (name first-name))
+					(def ego (create-person "Bollmeier" "Thomas"))
+					(person? ego)`,
+			},
+			want: &Boolean{true},
+		}, {
 			name: "structure getter works",
 			args: args{
 				code: `

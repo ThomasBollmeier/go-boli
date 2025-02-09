@@ -46,6 +46,22 @@ func (structType *StructureType) createConstructor() *BuiltinFunc {
 	})
 }
 
+func (structType *StructureType) createTypeChecker() *BuiltinFunc {
+	name := structType.name + "?"
+	return NewBuiltinFunc(name, func(args []ValueObject) (ValueObject, error) {
+		if len(args) != 1 {
+			return nil, fmt.Errorf("create method requires a single arguments, got %d", len(args))
+		}
+		arg0 := args[0]
+		if arg0.GetValueType() == ValueStruct {
+			structure := arg0.(*Structure)
+			return NewBoolean(structure.structType.name == structType.name), nil
+		} else {
+			return NewBoolean(false), nil
+		}
+	})
+}
+
 func (structType *StructureType) createGetters() []*BuiltinFunc {
 	ret := make([]*BuiltinFunc, len(structType.fields))
 	for i, field := range structType.fields {
@@ -68,7 +84,7 @@ func (structType *StructureType) createGetterForField(field string) *BuiltinFunc
 		}
 		structValue := args[0].(*Structure)
 
-		return structValue.values[field], nil	
+		return structValue.values[field], nil
 	})
 }
 
@@ -96,7 +112,7 @@ func (structType *StructureType) createSetterForField(field string) *BuiltinFunc
 
 		structValue.values[field] = args[1]
 
-		return GetNilObject(), nil	
+		return GetNilObject(), nil
 	})
 }
 

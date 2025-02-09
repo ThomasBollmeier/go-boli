@@ -253,6 +253,8 @@ func (interpreter *Interpreter) evalStructureDefinition(structDef *frontend.AST)
 	interpreter.env.Set(name, structType, true)
 	createFn := structType.createConstructor()
 	interpreter.env.Set(createFn.name, createFn, true)
+	typeCheckerFn := structType.createTypeChecker()
+	interpreter.env.Set(typeCheckerFn.name, typeCheckerFn, true)
 	for _, getter := range structType.createGetters() {
 		interpreter.env.Set(getter.name, getter, true)
 	}
