@@ -7,7 +7,7 @@ import (
 	ip "go-boli/internal/interpreter"
 )
 
-const Version = "0.4.12"
+const Version = "0.4.13"
 
 func Repl() {
 	var input string
