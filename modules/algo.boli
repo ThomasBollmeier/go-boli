@@ -1,0 +1,36 @@
+#|
+Various algorithms
+|#
+
+(require 'vector)
+
+(provide 
+  'quicksort)
+
+;; quicksort of a vector
+(def (quicksort v eq-fn compare-fn)
+  (if (< (count v) 2)
+    v
+    (let ([i (random-int (count v))]
+          [pivot (vector-ref v i)]
+          [pivots (filter (lambda (x) (eq-fn pivot x)) v)]
+          [left (filter (lambda (x) 
+                          (and
+                            (not (eq-fn pivot x))
+                            (compare-fn x pivot))) 
+                        v)]
+          [right (filter (lambda (x) 
+                            (and
+                              (not (eq-fn pivot x))
+                              (not (compare-fn x pivot)))) 
+                          v)])
+      (vector-concat 
+        (quicksort left eq-fn compare-fn)
+        pivots
+        (quicksort right eq-fn compare-fn)))))
+
+(def (quicksort v compare-fn)
+  (quicksort v = compare-fn))
+
+(def (quicksort v)
+  (quicksort v <))

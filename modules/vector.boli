@@ -1,0 +1,40 @@
+;; Vector functions
+
+(provide 
+  'create-vectorv
+  'vector-copy
+  'vector-concat)
+
+(def (create-vector n create-item-fn)
+  (def (helper i n acc)
+    (if (= i n)
+      acc
+      (block
+        (vector-append! acc (create-item-fn))
+        (helper (+ i 1) n acc))))
+  (helper 0 n (vector)))
+
+(def (vector-copy v)
+  (def (helper i n acc)
+    (if (= i n)
+      acc
+      (block
+        (vector-append! acc (vector-ref v i))
+        (helper (+ i 1) n acc))))
+  (helper 0 (count v) (vector)))
+
+(def (concat v1 v2)
+  (def (helper i n acc)
+    (if (= i n)
+      acc
+      (block
+        (vector-append! acc (vector-ref v2 i))
+        (helper (+ i 1) n acc))))
+  (helper 0 (count v2) (vector-copy v1)))
+
+(def (vector-concat v others...)
+  (def (helper v others)
+    (if (empty? others)
+      v
+      (helper (concat v (car others)) (cdr others))))
+  (helper v others))
