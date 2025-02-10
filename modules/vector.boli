@@ -1,7 +1,7 @@
 ;; Vector functions
 
 (provide 
-  'create-vectorv
+  'create-vector
   'vector-copy
   'vector-concat)
 
