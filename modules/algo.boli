@@ -5,7 +5,8 @@ Various algorithms
 (require 'vector)
 
 (provide 
-  'quicksort)
+  'quicksort
+  'mergesort)
 
 ;; quicksort of a vector
 (def (quicksort v eq-fn compare-fn)
@@ -34,3 +35,51 @@ Various algorithms
 
 (def (quicksort v)
   (quicksort v <))
+
+;; mergesort implementation for a vector:
+
+(def (mid n)
+     (if (= (% n 2) 0)
+     	 (/ n 2)
+	 (/ (- n 1) 2)))
+
+(def (merge v1 v2 comp-fn)
+     (def (helper i1 n1 i2 n2 acc)
+     	  (cond
+		    [(and (< i1 n1) (< i2 n2))
+		      (let ([x1 (vector-ref v1 i1)]
+		      	    [x2 (vector-ref v2 i2)])
+			    (if (comp-fn x1 x2)
+			    	(block
+					(vector-append! acc x1)
+			    		(helper (+ i1 1) n1 i2 n2 acc))
+				(block
+					(vector-append! acc x2)
+			    		(helper i1 n1 (+ i2 1)  n2 acc))))]   
+		    [(>= i1 n1)
+		     (if (< i2 n2)
+		     	 (block
+				(vector-append! acc (vector-ref v2 i2))
+				(helper i1 n1 (+ i2 1) n2 acc))
+			 acc)]
+		    [(>= i2 n2)
+		     (if (< i1 n1)
+		     	 (block
+				(vector-append! acc (vector-ref v1 i1))
+				(helper (+ i1 1) n1 i2 n2 acc))
+			 acc)]))
+     (helper 0 (count v1) 0 (count v2) (vector)))
+
+(def (mergesort v comp-fn)
+     (let ([n (count v)])
+     	  (if (< n 2)
+     	      v
+	          (let ([m (mid n)]
+	      	        [left (take m v)]
+		            [right (drop m v)])
+	      	    (merge (mergesort left comp-fn)
+		   	           (mergesort right comp-fn)
+			           comp-fn)))))
+
+(def (mergesort v)
+    (mergesort v <))
