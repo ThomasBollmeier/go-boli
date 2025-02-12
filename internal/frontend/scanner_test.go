@@ -193,6 +193,20 @@ func TestScanner_AdvanceMany(t *testing.T) {
 	)
 }
 
+func TestScanner_AdvanceIntDivision(t *testing.T) {
+	assertCode(
+		"(// 294 7)",
+		[]*Token{
+			NewToken(TokLeftParen, "(", 1, 1),
+			NewToken(TokSlashSlash, "//", 1, 2),
+			NewToken(TokInteger, "294", 1, 5),
+			NewToken(TokInteger, "7", 1, 9),
+			NewToken(TokRightParen, ")", 1, 10),
+		},
+		t,
+	)
+}
+
 func TestScanner_AdvanceComparisonOperators(t *testing.T) {
 	assertCode(
 		"= > >= < <=",

@@ -31,6 +31,7 @@ func NewGlobalEnv() *Environment {
 	for _, op := range []string{"+", "-", "*", "/", "%"} {
 		ret.SetGlobalBuiltinFunc(op, makeOperatorFn(op, true))
 	}
+	ret.SetGlobalBuiltinFunc("//", integerDiv)
 	ret.SetGlobalBuiltinFunc("^", makeOperatorFn("^", false))
 	for _, op := range []string{"=", ">", ">=", "<", "<="} {
 		ret.SetGlobalBuiltinFunc(op, func(objects []ValueObject) (ValueObject, error) {

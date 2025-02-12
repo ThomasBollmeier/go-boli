@@ -26,6 +26,7 @@ const (
 	TokMinus
 	TokAsterisk
 	TokSlash
+	TokSlashSlash
 	TokCaret
 	TokPercentage
 	TokDot
@@ -54,7 +55,6 @@ var SingleCharTokens = map[rune]TokenType{
 	'[': TokLeftBracket,
 	']': TokRightBracket,
 	'*': TokAsterisk,
-	'/': TokSlash,
 	'^': TokCaret,
 	'%': TokPercentage,
 	'λ': TokLambda,

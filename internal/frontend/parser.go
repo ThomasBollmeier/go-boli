@@ -109,7 +109,8 @@ func (p *Parser) parseExpr(token *Token) (*AST, error) {
 		}
 	case TokQuotParen, TokQuotBrace, TokQuotBracket:
 		return p.parseQuote(token)
-	case TokPlus, TokMinus, TokAsterisk, TokSlash, TokCaret, TokPercentage:
+	case TokPlus, TokMinus, TokAsterisk, TokSlash,
+		TokSlashSlash, TokCaret, TokPercentage:
 		return NewASTAtom(AstOperator, token), nil
 	case TokEqual, TokGreater, TokGreaterEq, TokLess, TokLessEq:
 		return NewASTAtom(AstComparisonOp, token), nil

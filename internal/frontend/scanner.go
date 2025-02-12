@@ -86,6 +86,14 @@ func (s *Scanner) Advance() (*Token, error) {
 		} else {
 			return s.scanNumber(ch, row, col)
 		}
+	case '/':
+		nextCh, errNext := s.inStream.Peek()
+		if errNext != nil || nextCh != '/' {
+			return NewToken(TokSlash, string(ch), row, col), nil
+		} else {
+			_, _ = s.Advance()
+			return NewToken(TokSlashSlash, "//", row, col), nil
+		}
 	case '=':
 		return NewToken(TokEqual, "=", row, col), nil
 	case '>':

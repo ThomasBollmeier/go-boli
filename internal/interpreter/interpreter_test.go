@@ -87,6 +87,13 @@ func TestRun(t *testing.T) {
 			want: &Rational{1, 3},
 		},
 		{
+			name: "evaluate integer division",
+			args: args{
+				code: "(// 26 5 2)",
+			},
+			want: &Integer{2},
+		},
+		{
 			name: "evaluate modulo",
 			args: args{
 				code: "(% 30 7)",

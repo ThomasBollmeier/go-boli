@@ -235,3 +235,26 @@ func getCommonNumberType(typeA, typeB ValueType) (ValueType, error) {
 
 	return numberTypes[commonIdx], nil
 }
+
+func integerDiv(objects []ValueObject) (ValueObject, error) {
+
+	if len(objects) == 0 {
+		return nil, errors.New("no integers given to // operator")
+	}
+
+	integerVals := make([]*Integer, len(objects))
+	for i, object := range objects {
+		if object.GetValueType() == ValueInteger {
+			integerVals[i] = object.(*Integer)
+		} else {
+			return nil, errors.New("integer division operator // requires integers")
+		}
+	}
+
+	result := integerVals[0].Value
+	for _, intVal := range integerVals[1:] {
+		result /= intVal.Value
+	}
+
+	return NewInteger(result), nil
+}
