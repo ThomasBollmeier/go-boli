@@ -3,7 +3,8 @@
 (provide 
   'create-vector
   'vector-copy
-  'vector-concat)
+  'vector-concat
+  'vector-any?)
 
 (def (create-vector n create-item-fn)
   (def (helper i n acc)
@@ -38,3 +39,13 @@
       v
       (helper (concat v (car others)) (cdr others))))
   (helper v others))
+
+(def (vector-any? pred v)
+  (def (helper i n)
+    (if (>= i n)
+      #f
+      (let ([x (vector-ref v i)])
+        (if (pred x)
+          #t
+          (helper (+ i 1) n)))))
+  (helper 0 (count v)))
