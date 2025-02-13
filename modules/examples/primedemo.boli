@@ -1,0 +1,21 @@
+(require 'vector)
+
+(def (next-prime primes)
+  (def (helper i)
+    (if (vector-any? (lambda (p) (= 0 (% i p))) 
+                     primes)
+      (helper (+ i 1))
+      i))
+  (let ([n (count primes)]
+        [last-prime (vector-ref primes (- n 1))])
+    (helper (+ last-prime 1))))
+
+(def (primes-le n)
+  (def (helper primes)
+    (let ([p (next-prime primes)])
+      (if (<= p n)
+        (block
+          (vector-append! primes p)
+          (helper primes))
+        primes)))
+  (helper (vector 2)))
