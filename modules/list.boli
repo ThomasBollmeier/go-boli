@@ -16,4 +16,13 @@ Various list functions
       (reverse acc)))
   (helper 0 lst nil))
 
+(def (member val lst eq-fn)
+     (if (empty? lst)
+     	 #f
+	 (let ([x (car lst)])
+	      (if (eq-fn val x)
+	      	  lst
+		  (member val (cdr lst) eq-fn)))))
 
+(def (member val lst)
+     (member val lst =))
