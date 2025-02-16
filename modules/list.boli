@@ -26,3 +26,15 @@ Various list functions
 
 (def (member val lst)
      (member val lst =))
+
+(def (foldl lst fn init-val)
+     (if (empty? lst)
+     	 init-val
+	 (foldl (cdr lst)
+	 	fn
+		(fn init-val (car lst)))))
+
+(def (foldr lst fn init-val)
+     (foldl (reverse lst)
+     	    (λ (acc it) (fn it acc))
+	    init-val))
