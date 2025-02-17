@@ -18,23 +18,27 @@ Various list functions
 
 (def (member val lst eq-fn)
      (if (empty? lst)
-     	 #f
-	 (let ([x (car lst)])
-	      (if (eq-fn val x)
-	      	  lst
-		  (member val (cdr lst) eq-fn)))))
+     	  #f
+	      (let ([x (car lst)])
+	         (if (eq-fn val x)
+	        	  lst
+		          (member val (cdr lst) eq-fn)))))
 
 (def (member val lst)
      (member val lst =))
 
-(def (foldl lst fn init-val)
+(def (foldl fn init-val lst)
      (if (empty? lst)
      	 init-val
-	 (foldl (cdr lst)
-	 	fn
-		(fn init-val (car lst)))))
+	     (foldl 
+	 	     fn
+		     (fn init-val (car lst))
+         (cdr lst))))
 
-(def (foldr lst fn init-val)
-     (foldl (reverse lst)
-     	    (λ (acc it) (fn it acc))
-	    init-val))
+(def (foldr fn init-val lst)
+     (foldl (λ (acc it) (fn it acc))
+	          init-val
+            (reverse lst)))
+
+(def (reduce fn lst)
+     (foldl fn (car lst) (cdr lst)))
