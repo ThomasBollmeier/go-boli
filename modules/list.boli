@@ -42,3 +42,12 @@ Various list functions
 
 (def (reduce fn lst)
      (foldl fn (car lst) (cdr lst)))
+
+(def (list->vector lst)
+     (def (helper lst acc)
+     	  (if (empty? lst)
+	      acc
+	      (block
+		(vector-append! acc (car lst))
+		(helper (cdr lst) acc))))
+     (helper lst (vector)))

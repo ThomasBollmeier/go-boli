@@ -4,7 +4,8 @@
   'create-vector
   'vector-copy
   'vector-concat
-  'vector-any?)
+  'vector-any?
+  'vector->list)
 
 (def (create-vector n create-item-fn)
   (def (helper i n acc)
@@ -49,3 +50,11 @@
           #t
           (helper (+ i 1) n)))))
   (helper 0 (count v)))
+
+(def (vector->list v)
+     (def (helper i acc)
+     	  (if (< i 0)
+	      acc
+	      (let ([x (vector-ref v i)])
+	      	   (helper (- i 1) (cons x acc)))))
+    (helper (- (count v) 1) nil))
