@@ -45,6 +45,8 @@ func NewGlobalEnv() *Environment {
 		return NewBoolean(!isTruthy(objects[0])), nil
 	})
 
+	ret.SetGlobalBuiltinFunc("equal?", allValuesEqual)
+
 	ret.SetGlobalBuiltinFunc("string", stringConv)
 	ret.SetGlobalBuiltinFunc("string-sub", stringSub)
 	ret.SetGlobalBuiltinFunc("string-replace", stringReplace)

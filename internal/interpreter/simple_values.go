@@ -169,6 +169,10 @@ func (i *Integer) HashStr() string {
 	return fmt.Sprintf("%d-%d", i.GetValueType(), i.Value)
 }
 
+func (i *Integer) IsEqual(other ValueObject) bool {
+	return i.Value == other.(*Integer).Value
+}
+
 type Rational struct {
 	Numerator   int
 	Denominator int
@@ -238,6 +242,11 @@ func (r *Rational) LessThan(other *Rational) bool {
 
 func (r *Rational) LessThanOrEqual(other *Rational) bool {
 	return r.Numerator*other.Denominator <= r.Numerator*r.Denominator
+}
+
+func (r *Rational) IsEqual(other ValueObject) bool {
+	s := other.(*Rational)
+	return r.Numerator == s.Numerator && r.Denominator == s.Denominator
 }
 
 type Real struct {
@@ -320,6 +329,10 @@ func (s *Str) HashStr() string {
 	return fmt.Sprintf("%d-%s", s.GetValueType(), s.Value)
 }
 
+func (s *Str) IsEqual(other ValueObject) bool {
+	return s.Value == other.(*Str).Value
+}
+
 type Symbol struct {
 	Value string
 }
@@ -338,6 +351,10 @@ func (s *Symbol) String() string {
 
 func (s *Symbol) HashStr() string {
 	return fmt.Sprintf("%d-%s", s.GetValueType(), s.Value)
+}
+
+func (s *Symbol) IsEqual(other ValueObject) bool {
+	return s.Value == other.(*Symbol).Value
 }
 
 type QuotedValue struct {

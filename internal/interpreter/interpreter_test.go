@@ -281,6 +281,41 @@ func TestRun(t *testing.T) {
 			want: &Boolean{true},
 		},
 		{
+			name: "evaluate integers equal",
+			args: args{
+				code: `
+					(def answer 42)
+					(equal? answer 42)`,
+			},
+			want: &Boolean{true},
+		},
+		{
+			name: "evaluate rationals equal",
+			args: args{
+				code: `
+					(equal? 1/2 2/4 3/6)`,
+			},
+			want: &Boolean{true},
+		},
+		{
+			name: "evaluate strings equal",
+			args: args{
+				code: `
+					(def ego "Thomas")
+					(equal? "Thomas" ego)`,
+			},
+			want: &Boolean{true},
+		},
+		{
+			name: "evaluate symbol equal",
+			args: args{
+				code: `
+					(def gender 'male)
+					(equal? gender 'male)`,
+			},
+			want: &Boolean{true},
+		},
+		{
 			name: "evaluate if expression",
 			args: args{
 				code: `

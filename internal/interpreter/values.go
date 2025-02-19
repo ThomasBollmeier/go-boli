@@ -35,6 +35,10 @@ type Clonable[T any] interface {
 	Clone() T
 }
 
+type Equatable interface {
+	IsEqual(other ValueObject) bool
+}
+
 func makeTypeCheckFunc(name string, valueType ValueType) func(objects []ValueObject) (ValueObject, error) {
 	return func(objects []ValueObject) (ValueObject, error) {
 		if len(objects) != 1 {
@@ -42,4 +46,30 @@ func makeTypeCheckFunc(name string, valueType ValueType) func(objects []ValueObj
 		}
 		return NewBoolean(objects[0].GetValueType() == valueType), nil
 	}
+}
+
+func allValuesEqual(values []ValueObject) (ValueObject, error) {
+	for i, value := range values[:len(values)-1] {
+		eq, err := valuesEqual(value, values[i+1])
+		if err != nil {
+			return nil, err
+		}
+		if !eq {
+			return NewBoolean(false), nil
+		}
+	}
+
+	return NewBoolean(true), nil
+}
+
+func valuesEqual(a, b ValueObject) (bool, error) {
+	if a.GetValueType() != b.GetValueType() {
+		return false, nil
+	}
+	eqA, ok := a.(Equatable)
+	if !ok {
+		return false, fmt.Errorf("'%s' cannot be compared for equality", a)
+	}
+
+	return eqA.IsEqual(b), nil
 }
