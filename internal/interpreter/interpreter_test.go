@@ -52,6 +52,13 @@ func TestRun(t *testing.T) {
 			want: &Integer{42},
 		},
 		{
+			name: "evaluate integer with grouping",
+			args: args{
+				code: "1.000.000",
+			},
+			want: &Integer{1000000},
+		},
+		{
 			name: "evaluate addition",
 			args: args{
 				code: "(+ 41 1)",

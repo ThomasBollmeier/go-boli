@@ -319,6 +319,9 @@ func (s *Scanner) scanNumber(firstDigit rune, row, col int) (*Token, error) {
 			}
 			lexeme += string(ch)
 			_, _ = s.advanceChar()
+		case '.':
+			_, _ = s.advanceChar()
+			continue
 		}
 		break
 	}
@@ -335,6 +338,10 @@ func (s *Scanner) scanNumber(firstDigit rune, row, col int) (*Token, error) {
 		}
 		if unicode.IsDigit(ch) {
 			nextDigits += string(ch)
+			_, _ = s.advanceChar()
+			continue
+		}
+		if ch == '.' {
 			_, _ = s.advanceChar()
 			continue
 		}
