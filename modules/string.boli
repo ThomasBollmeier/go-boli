@@ -1,0 +1,32 @@
+(provide 
+  'string-find
+  'string-split)
+
+(def (string-find s search)
+  (def len-search (string-count search))
+  (def (helper i n)
+    (if (= i n)
+      #f
+      (let ([sub (string-sub s i len-search)])
+        (if (string=? sub search)
+          i
+          (helper (+ i 1) n)))))
+  (helper 0 (string-count s)))
+
+(def (string-split s delim)
+  (def len-delim (string-count delim))
+  (def (helper s acc)
+    (let ([idx (string-find s delim)])
+      (if idx
+        (block
+          (if (> idx 0)
+            (vector-append! acc (string-sub s 0 idx))
+            nil)
+          (helper (string-sub s (+ idx len-delim)) acc))
+        (block
+          (vector-append! acc s)
+          acc))))
+  (helper s (vector)))
+
+(def (string-split s)
+  (string-split s " "))
