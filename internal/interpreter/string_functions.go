@@ -153,10 +153,11 @@ func stringToInt(objects []ValueObject) (ValueObject, error) {
 		return nil, fmt.Errorf("string->int expects string as argument")
 	}
 	s := objects[0].(*Str).Value
+	s = strings.Replace(s, ".", "", -1)
 
 	i, err := strconv.Atoi(s)
 	if err != nil {
-		return nil, err
+		return NewBoolean(false), nil
 	}
 
 	return NewInteger(i), nil
@@ -175,7 +176,7 @@ func stringToReal(objects []ValueObject) (ValueObject, error) {
 
 	f, err := strconv.ParseFloat(s, 64)
 	if err != nil {
-		return nil, err
+		return NewBoolean(false), nil
 	}
 
 	return NewReal(f), nil

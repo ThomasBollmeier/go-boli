@@ -206,6 +206,19 @@ func TestRun(t *testing.T) {
 			want: &Str{"Thomas sagt: \"Hallo!\""},
 		},
 		{
+			name: "evaluate string to int ok",
+			args: args{
+				code: `(string->int "1.000")`,
+			},
+			want: &Integer{1000},
+		},
+		{
+			name: "evaluate string to int fails",
+			args: args{
+				code: `(string->int "1.000 Stk.")`,
+			},
+			want: &Boolean{false},
+		}, {
 			name: "evaluate conjunction",
 			args: args{
 				code: `
