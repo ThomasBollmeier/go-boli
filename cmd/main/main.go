@@ -13,17 +13,23 @@ func main() {
 	case 0:
 		internal.Repl()
 	default:
-		filePath := args[0]
-		source, err := interpreter.NewFileSourceFactory().GetSource(filePath)
-		if err != nil {
-			panic(err)
-		}
-		value, err := interpreter.RunSource(source, args[1:])
-		if err != nil {
-			panic(err)
-		}
-		if value.GetValueType() != interpreter.ValueNil {
-			fmt.Println(value)
+		switch args[0] {
+		case "--version":
+			fmt.Print(internal.ProgInfo)
+			return
+		default:
+			filePath := args[0]
+			source, err := interpreter.NewFileSourceFactory().GetSource(filePath)
+			if err != nil {
+				panic(err)
+			}
+			value, err := interpreter.RunSource(source, args[1:])
+			if err != nil {
+				panic(err)
+			}
+			if value.GetValueType() != interpreter.ValueNil {
+				fmt.Println(value)
+			}
 		}
 	}
 }
