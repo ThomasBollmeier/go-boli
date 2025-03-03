@@ -1,0 +1,11 @@
+(require ('vector . 'v)
+	 ('list . 'l))
+
+(def (comp fs...)
+     (def (helper fs x)
+     	  (if (empty? fs)
+     	      x
+	      (helper (cdr fs) ((car fs) x))))
+     (let ([rev-fs (l::reverse (v::vector->list fs))])
+     	  (λ (x)
+	     (helper rev-fs x))))
