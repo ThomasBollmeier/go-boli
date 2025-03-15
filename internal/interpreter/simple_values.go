@@ -309,30 +309,6 @@ func (r *Real) LessThanOrEqual(other *Real) bool {
 	return r.Value <= other.Value
 }
 
-type Str struct {
-	Value string
-}
-
-func NewStr(value string) *Str {
-	return &Str{Value: value}
-}
-
-func (s *Str) GetValueType() ValueType {
-	return ValueString
-}
-
-func (s *Str) String() string {
-	return "\"" + s.Value + "\""
-}
-
-func (s *Str) HashStr() string {
-	return fmt.Sprintf("%d-%s", s.GetValueType(), s.Value)
-}
-
-func (s *Str) IsEqual(other ValueObject) bool {
-	return s.Value == other.(*Str).Value
-}
-
 type Symbol struct {
 	Value string
 }

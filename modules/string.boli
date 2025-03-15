@@ -1,6 +1,7 @@
 (provide 
   'string-find
-  'string-split)
+  'string-split
+  'string-starts-with?)
 
 (def (string-find s search)
   (def len-search (string-count search))
@@ -30,3 +31,7 @@
 
 (def (string-split s)
   (string-split s " "))
+
+(def (string-starts-with? s prefix)
+    (let ([n (count prefix)])
+        (equal? prefix (take n s))))

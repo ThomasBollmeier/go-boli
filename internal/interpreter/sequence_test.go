@@ -43,6 +43,20 @@ func TestSequenceFunctions(t *testing.T) {
 			want: "(vector 2 3)",
 		},
 		{
+			name: "take from string",
+			args: args{
+				code: `(take 2 "Thomas")`,
+			},
+			want: `"Th"`,
+		},
+		{
+			name: "take from string 2",
+			args: args{
+				code: `(take 20 "Thomas")`,
+			},
+			want: `"Thomas"`,
+		},
+		{
 			name: "take-while from list",
 			args: args{
 				code: `(take-while (λ (x) (< x 4)) (list 2 3 4))`,
@@ -62,6 +76,13 @@ func TestSequenceFunctions(t *testing.T) {
 				code: `(take-while (λ (x) (< x 4)) (list->stream '(2 3 4)))`,
 			},
 			want: "(vector 2 3)",
+		},
+		{
+			name: "take-while from string",
+			args: args{
+				code: `(take-while (λ (ch) (not (equal? ch "o"))) "Thomas")`,
+			},
+			want: `"Th"`,
 		},
 		{
 			name: "filter a list",
@@ -104,6 +125,22 @@ func TestSequenceFunctions(t *testing.T) {
 			want: "(vector 2 4 6)",
 		},
 		{
+			name: "filter a string",
+			args: args{
+				code: `
+					(def (vowel? ch) 
+						(or (equal? ch "a")
+							(equal? ch "e")
+ 							(equal? ch "i")
+							(equal? ch "o")
+							(equal? ch "u")))
+					(def (consonant? ch) 
+						(not (vowel? ch)))
+					(filter consonant? "Thomas")`,
+			},
+			want: `"Thms"`,
+		},
+		{
 			name: "map a list",
 			args: args{
 				code: `
@@ -132,6 +169,15 @@ func TestSequenceFunctions(t *testing.T) {
 					(take 6 (map sq s))`,
 			},
 			want: "(vector 1 4 9 16 25 36)",
+		},
+		{
+			name: "map a string",
+			args: args{
+				code: `
+					(def (identity ch) ch)
+					(map identity "Thomas")`,
+			},
+			want: `(vector "T" "h" "o" "m" "a" "s")`,
 		},
 		{
 			name: "drop from a list",
@@ -167,6 +213,14 @@ func TestSequenceFunctions(t *testing.T) {
 			want: "(vector 4 6)",
 		},
 		{
+			name: "drop from a string",
+			args: args{
+				code: `
+					(take 3 (drop 2 "Thomas"))`,
+			},
+			want: `"oma"`,
+		},
+		{
 			name: "drop-while from a list",
 			args: args{
 				code: `
@@ -198,6 +252,14 @@ func TestSequenceFunctions(t *testing.T) {
 					(take 10 (drop-while (λ (x) (< x 4)) (filter even? s)))`,
 			},
 			want: "(vector 4 6)",
+		},
+		{
+			name: "drop-while from a string",
+			args: args{
+				code: `
+					(drop-while (λ (ch) (equal? ch "T")) "Thomas")`,
+			},
+			want: `"homas"`,
 		},
 	}
 

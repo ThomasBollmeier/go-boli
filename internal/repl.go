@@ -7,7 +7,7 @@ import (
 	ip "go-boli/internal/interpreter"
 )
 
-const Version = "0.4.22"
+const Version = "0.4.23"
 
 var ProgInfo = fmt.Sprintf("(B)ollmeier's (O)wn (L)isp (I)mplementation - Version %s\n", Version)
 
