@@ -25,7 +25,7 @@ func (n *NilObject) String() string {
 }
 
 func (n *NilObject) Car() (ValueObject, error) {
-	return n, nil
+	return nil, errors.New("nil object does not support car")
 }
 
 func (n *NilObject) Cdr() (ValueObject, error) {

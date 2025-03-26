@@ -190,6 +190,15 @@ func TestSequenceFunctions(t *testing.T) {
 			want: `(vector (cons 0 "T") (cons 1 "o") (cons 2 "m"))`,
 		},
 		{
+			name: "map with multiple arguments - 2",
+			args: args{
+				code: `
+					(def xs (list 1 2 3))
+					(map (λ (a b) (* a b)) xs (drop 1 xs))`,
+			},
+			want: `(list 2 6)`,
+		},
+		{
 			name: "drop from a list",
 			args: args{
 				code: `
