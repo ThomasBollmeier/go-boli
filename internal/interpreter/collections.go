@@ -141,13 +141,22 @@ func (p *Pair) Filter(pred Callable) (Sequence, error) {
 	return elementsToSequence(elements), nil
 }
 
-func (p *Pair) Map(fn Callable) (Sequence, error) {
+func (p *Pair) Map(fn Callable, otherSequences []Sequence) (Sequence, error) {
 	var elements []ValueObject
+	var args []ValueObject
+	var err error
+
 	listElements := p.Flatten()
+	sequences := otherSequences
 	for _, element := range listElements {
-		mappedVal, err := Call(fn, []ValueObject{element})
+		args, sequences, err = splitFirstElements(sequences)
 		if err != nil {
-			return nil, err
+			break
+		}
+		args = append([]ValueObject{element}, args...)
+		mappedVal, errCall := Call(fn, args)
+		if errCall != nil {
+			return nil, errCall
 		}
 		elements = append(elements, mappedVal)
 	}
@@ -316,15 +325,25 @@ func (v *Vector) Filter(pred Callable) (Sequence, error) {
 	return NewVector(elements), nil
 }
 
-func (v *Vector) Map(fn Callable) (Sequence, error) {
+func (v *Vector) Map(fn Callable, otherSequences []Sequence) (Sequence, error) {
 	var elements []ValueObject
+	var args []ValueObject
+	var err error
+	sequences := otherSequences
+
 	for _, element := range v.elements {
-		mappedVal, err := Call(fn, []ValueObject{element})
+		args, sequences, err = splitFirstElements(sequences)
 		if err != nil {
-			return nil, err
+			break
+		}
+		args = append([]ValueObject{element}, args...)
+		mappedVal, errCall := Call(fn, args)
+		if errCall != nil {
+			return nil, errCall
 		}
 		elements = append(elements, mappedVal)
 	}
+
 	return NewVector(elements), nil
 }
 

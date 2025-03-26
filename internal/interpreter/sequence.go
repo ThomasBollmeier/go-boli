@@ -11,7 +11,7 @@ type Sequence interface {
 	Take(n int) (Sequence, error)
 	TakeWhile(pred Callable) (Sequence, error)
 	Filter(pred Callable) (Sequence, error)
-	Map(fn Callable) (Sequence, error)
+	Map(fn Callable, sequences []Sequence) (Sequence, error)
 	Drop(n int) (Sequence, error)
 	DropWhile(pred Callable) (Sequence, error)
 }
@@ -96,8 +96,8 @@ func filter(objects []ValueObject) (ValueObject, error) {
 }
 
 func mapFunc(objects []ValueObject) (ValueObject, error) {
-	if len(objects) != 2 {
-		return nil, fmt.Errorf("expected 2 values, got %d", len(objects))
+	if len(objects) < 2 {
+		return nil, fmt.Errorf("expected at least two values, got %d", len(objects))
 	}
 	fn, ok := objects[0].(Callable)
 	if !ok {
@@ -109,7 +109,17 @@ func mapFunc(objects []ValueObject) (ValueObject, error) {
 		return nil, fmt.Errorf("second argument of map must be a sequence")
 	}
 
-	return sequence.Map(fn)
+	var otherSequences []Sequence
+
+	for _, object := range objects[2:] {
+		otherSequence, okOther := object.(Sequence)
+		if !okOther {
+			return nil, fmt.Errorf("arguments of map after first must be sequencea")
+		}
+		otherSequences = append(otherSequences, otherSequence)
+	}
+
+	return sequence.Map(fn, otherSequences)
 }
 
 func drop(objects []ValueObject) (ValueObject, error) {
@@ -168,4 +178,24 @@ func isEmpty(objects []ValueObject) (ValueObject, error) {
 	}
 
 	return NewBoolean(lseq.Count() == 0), nil
+}
+
+func splitFirstElements(sequences []Sequence) ([]ValueObject, []Sequence, error) {
+	var elements []ValueObject
+	var nextSequences []Sequence
+
+	for _, sequence := range sequences {
+		element, err := sequence.Car()
+		if err != nil {
+			return nil, nil, err
+		}
+		elements = append(elements, element)
+		nextSequence, err := sequence.Cdr()
+		if err != nil {
+			return nil, nil, err
+		}
+		nextSequences = append(nextSequences, nextSequence.(Sequence))
+	}
+
+	return elements, nextSequences, nil
 }

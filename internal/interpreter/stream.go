@@ -116,14 +116,16 @@ func (filtered *FilteredStream) Next() (ValueObject, bool) {
 }
 
 type MappedStream struct {
-	stream Stream
-	mapFn  Callable
+	stream    Stream
+	mapFn     Callable
+	sequences []Sequence
 }
 
-func NewMappedStream(stream Stream, mapFn Callable) *MappedStream {
+func NewMappedStream(stream Stream, mapFn Callable, sequences []Sequence) *MappedStream {
 	return &MappedStream{
 		stream,
 		mapFn,
+		sequences,
 	}
 }
 
@@ -132,7 +134,7 @@ func (mapped *MappedStream) String() string {
 }
 
 func (mapped *MappedStream) Clone() Stream {
-	return NewMappedStream(mapped.stream.Clone(), mapped.mapFn)
+	return NewMappedStream(mapped.stream.Clone(), mapped.mapFn, mapped.sequences[:])
 }
 
 func (mapped *MappedStream) Next() (ValueObject, bool) {
@@ -140,7 +142,17 @@ func (mapped *MappedStream) Next() (ValueObject, bool) {
 	if !ok {
 		return nil, false
 	}
-	mappedVal, err := Call(mapped.mapFn, []ValueObject{value})
+
+	var args []ValueObject
+	var err error
+	args, mapped.sequences, err = splitFirstElements(mapped.sequences)
+	if err != nil {
+		return nil, false
+	}
+	args = append([]ValueObject{value}, args...)
+
+	mappedVal, err := Call(mapped.mapFn, args)
+
 	if err != nil {
 		return nil, false
 	}
@@ -299,8 +311,31 @@ func (seq *StreamSeq) Filter(pred Callable) (Sequence, error) {
 	return NewStreamSeq(NewFilteredStream(seq.stream, pred)), nil
 }
 
-func (seq *StreamSeq) Map(fn Callable) (Sequence, error) {
-	return NewStreamSeq(NewMappedStream(seq.stream, fn)), nil
+func (seq *StreamSeq) Map(fn Callable, otherSequences []Sequence) (Sequence, error) {
+	othersAreStreams := true
+	for _, sequence := range otherSequences {
+		_, ok := sequence.(Stream)
+		if !ok {
+			othersAreStreams = false
+			break
+		}
+	}
+
+	mappedStream := NewMappedStream(seq.stream, fn, otherSequences)
+
+	if othersAreStreams {
+		return NewStreamSeq(mappedStream), nil
+	} else {
+		var elements []ValueObject
+		for {
+			element, ok := mappedStream.Next()
+			if !ok {
+				break
+			}
+			elements = append(elements, element)
+		}
+		return NewVector(elements), nil
+	}
 }
 
 func (seq *StreamSeq) Drop(n int) (Sequence, error) {

@@ -83,11 +83,21 @@ func (s *Str) Filter(pred Callable) (Sequence, error) {
 	return NewStr(strings.Join(charsFiltered, "")), nil
 }
 
-func (s *Str) Map(fn Callable) (Sequence, error) {
+func (s *Str) Map(fn Callable, otherSequences []Sequence) (Sequence, error) {
 	var elements []ValueObject
+	var arguments []ValueObject
+	var value ValueObject
+	var err error
+
+	sequences := otherSequences
 	chars := toChars(s.Value)
 	for _, ch := range chars {
-		value, err := Call(fn, []ValueObject{NewStr(ch)})
+		arguments, sequences, err = splitFirstElements(sequences)
+		if err != nil {
+			break
+		}
+		arguments = append([]ValueObject{NewStr(ch)}, arguments...)
+		value, err = Call(fn, arguments)
 		if err != nil {
 			return nil, err
 		}

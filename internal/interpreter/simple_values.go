@@ -44,7 +44,7 @@ func (n *NilObject) Filter(Callable) (Sequence, error) {
 	return n, nil
 }
 
-func (n *NilObject) Map(Callable) (Sequence, error) {
+func (n *NilObject) Map(Callable, []Sequence) (Sequence, error) {
 	return n, nil
 }
 
