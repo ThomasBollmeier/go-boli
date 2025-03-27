@@ -199,6 +199,16 @@ func TestSequenceFunctions(t *testing.T) {
 			want: `(list 2 6)`,
 		},
 		{
+			name: "map with multiple stream arguments",
+			args: args{
+				code: `
+					(def nat-nums (iterator 0 (λ (n) (+ n 1))))
+					(def sums (map (λ (a b) (+ a b)) nat-nums (drop 1 nat-nums)))
+					(take 3 sums)`,
+			},
+			want: `(vector 1 3 5)`,
+		},
+		{
 			name: "drop from a list",
 			args: args{
 				code: `

@@ -314,7 +314,7 @@ func (seq *StreamSeq) Filter(pred Callable) (Sequence, error) {
 func (seq *StreamSeq) Map(fn Callable, otherSequences []Sequence) (Sequence, error) {
 	othersAreStreams := true
 	for _, sequence := range otherSequences {
-		_, ok := sequence.(Stream)
+		_, ok := sequence.(*StreamSeq)
 		if !ok {
 			othersAreStreams = false
 			break
