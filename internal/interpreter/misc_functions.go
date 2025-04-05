@@ -1,7 +1,10 @@
 package interpreter
 
 import (
+	"bufio"
 	"fmt"
+	"os"
+	"strings"
 )
 
 func readLine(objects []ValueObject) (ValueObject, error) {
@@ -18,14 +21,15 @@ func readLine(objects []ValueObject) (ValueObject, error) {
 		return nil, fmt.Errorf("read-line expects at most one argument, got %d", len(objects))
 	}
 
-	var line string
 	if prompt != "" {
 		fmt.Print(prompt)
 	}
-	_, err := fmt.Scanln(&line)
+	reader := bufio.NewReader(os.Stdin)
+	line, err := reader.ReadString('\n')
 	if err != nil {
 		return nil, err
 	}
+	line = strings.Trim(line, "\n")
 
 	return NewStr(line), nil
 }
