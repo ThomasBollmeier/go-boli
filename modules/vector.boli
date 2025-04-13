@@ -12,7 +12,7 @@
     (if (= i n)
       acc
       (block
-        (vector-append! acc (create-item-fn))
+        (vector-append! acc (create-item-fn i))
         (helper (+ i 1) n acc))))
   (helper 0 n (vector)))
 
