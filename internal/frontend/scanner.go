@@ -232,10 +232,7 @@ func (s *Scanner) scanIdentifier(ch rune, row, col int) (*Token, error) {
 }
 
 func (s *Scanner) isValidFirstIdentChar(ch rune) bool {
-	if unicode.IsLetter(ch) {
-		return true
-	}
-	if ch == '#' {
+	if unicode.IsLetter(ch) || ch == '#' || ch == '_' {
 		return true
 	}
 	return false
