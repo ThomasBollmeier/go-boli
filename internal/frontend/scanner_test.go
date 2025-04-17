@@ -154,7 +154,7 @@ func TestScanner_Advance(t *testing.T) {
 			fields: fields{
 				stream: *NewBufferedStream(NewCharStreamString("...xs")),
 			},
-			want: NewToken(TokSpread, "...xs", 1, 1),
+			want: NewToken(TokSpread, "...", 1, 1),
 		},
 		{
 			name: "Get var parameter",

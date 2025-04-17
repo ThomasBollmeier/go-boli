@@ -116,13 +116,25 @@ func (p *Parser) parseExpr(token *Token) (*AST, error) {
 		return NewASTAtom(AstComparisonOp, token), nil
 	case TokSpread:
 		if p.callArgsNesting > 0 {
-			return NewASTAtom(AstSpread, token), nil
+			return p.parseSpread(token)
 		} else {
 			return nil, errors.New("spreads are only allowed as call args")
 		}
 	default:
 		return nil, errors.New("unknown expression: '" + token.Lexeme + "'")
 	}
+}
+
+func (p *Parser) parseSpread(start *Token) (*AST, error) {
+	ret := NewAST(AstSpread, "")
+	ret.AddToken(start)
+	expr, err := p.parseExpr(nil)
+	if err != nil {
+		return nil, err
+	}
+	ret.AddChild(expr)
+
+	return ret, nil
 }
 
 func (p *Parser) parseLogicalOp(start *Token) (*AST, error) {

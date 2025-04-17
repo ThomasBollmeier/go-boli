@@ -113,25 +113,15 @@ func (s *Scanner) Advance() (*Token, error) {
 			return NewToken(TokLess, string(ch), row, col), nil
 		}
 	case '.':
-		nextChars := s.inStream.PeekMany(3)
-		if len(nextChars) == 3 &&
+		nextChars := s.inStream.PeekMany(2)
+		if len(nextChars) == 2 &&
 			nextChars[0] == '.' &&
-			nextChars[1] == '.' &&
-			s.isValidFirstIdentChar(nextChars[2]) {
+			nextChars[1] == '.' {
 
-			for i := 0; i < 3; i++ {
+			for i := 0; i < 2; i++ {
 				_, _ = s.advanceChar()
 			}
-
-			var ident *Token
-			ident, err = s.scanIdentifier(nextChars[2], row, col)
-			if err != nil {
-				return nil, err
-			}
-			if ident.Type != TokIdentifier {
-				return nil, errors.New("spread expects identifier")
-			}
-			return NewToken(TokSpread, "..."+ident.Lexeme, row, col), nil
+			return NewToken(TokSpread, "...", row, col), nil
 		} else {
 			return NewToken(TokDot, ".", row, col), nil
 		}

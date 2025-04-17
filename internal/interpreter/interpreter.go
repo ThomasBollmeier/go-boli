@@ -345,13 +345,13 @@ func (interpreter *Interpreter) evalVariable(variable *frontend.AST) (ValueObjec
 }
 
 func (interpreter *Interpreter) evalSpread(spread *frontend.AST) ([]ValueObject, error) {
-	varName := spread.GetValue()[3:]
-	value, ok := interpreter.env.Get(varName)
-	if !ok {
-		return nil, errors.New(fmt.Sprintf("variable '%s' is not defined", varName))
+	spreadedExpr := spread.GetChildren()[0]
+	value, err := interpreter.Eval(spreadedExpr)
+	if err != nil {
+		return nil, err
 	}
 	if value.GetValueType() != ValueVector {
-		return nil, errors.New(fmt.Sprintf("variable '%s' is not vector", varName))
+		return nil, errors.New("spreaded value is not vector")
 	}
 
 	return value.(*Vector).GetElements(), nil
