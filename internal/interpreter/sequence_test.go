@@ -290,6 +290,26 @@ func TestSequenceFunctions(t *testing.T) {
 			},
 			want: `"homas"`,
 		},
+		{
+			name: "list equality",
+			args: args{
+				code: `
+					(def a (list 42))
+					(def b (list 42))
+					(equal? a b)`,
+			},
+			want: "#true",
+		},
+		{
+			name: "vector equality",
+			args: args{
+				code: `
+					(def a (vector 42))
+					(def b (vector 42))
+					(equal? a b)`,
+			},
+			want: "#true",
+		},
 	}
 
 	for _, tt := range tests {

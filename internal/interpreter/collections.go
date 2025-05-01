@@ -221,6 +221,22 @@ loop:
 	return ret
 }
 
+func (p *Pair) IsEqual(other ValueObject) bool {
+	if other.GetValueType() != ValuePair {
+		return false
+	}
+	op := other.(*Pair)
+	ok, err := valuesEqual(p.first, op.first)
+	if !ok || err != nil {
+		return false
+	}
+	ok, err = valuesEqual(p.second, op.second)
+	if !ok || err != nil {
+		return false
+	}
+	return true
+}
+
 func elementsToSequence(elements []ValueObject) Sequence {
 	if len(elements) == 0 {
 		return GetNilObject()
@@ -384,6 +400,25 @@ func (v *Vector) DropWhile(pred Callable) (Sequence, error) {
 
 func (v *Vector) Count() int {
 	return len(v.elements)
+}
+
+func (v *Vector) IsEqual(other ValueObject) bool {
+	if other.GetValueType() != ValueVector {
+		return false
+	}
+	ov := other.(*Vector)
+	if len(v.elements) != len(ov.elements) {
+		return false
+	}
+	for i := 0; i < len(v.elements); i++ {
+		elem := v.elements[i]
+		otherElem := ov.elements[i]
+		ok, err := valuesEqual(elem, otherElem)
+		if !ok || err != nil {
+			return false
+		}
+	}
+	return true
 }
 
 func vector(values []ValueObject) (ValueObject, error) {

@@ -60,6 +60,10 @@ func (n *NilObject) Count() int {
 	return 0
 }
 
+func (n *NilObject) IsEqual(other ValueObject) bool {
+	return other.GetValueType() == ValueNil
+}
+
 type Boolean struct {
 	Value bool
 }
