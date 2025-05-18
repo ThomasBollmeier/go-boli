@@ -782,6 +782,21 @@ func TestRun(t *testing.T) {
 			},
 			want: &Vector{elements: []ValueObject{&Integer{4}, &Integer{5}}},
 		},
+		{
+			name: "create set of structs",
+			args: args{
+				code: `
+				(def-struct posn (x y))
+				(def origin (create-posn 0 0))
+				(def other (create-posn 1 1))
+				(def positions (create-set))
+				(set-add! positions origin)
+				(set-add! positions origin)
+				(set-add! positions other)
+				(set-length positions)`,
+			},
+			want: &Integer{2},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

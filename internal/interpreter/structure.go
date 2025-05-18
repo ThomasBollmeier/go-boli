@@ -144,3 +144,13 @@ func (structure *Structure) String() string {
 	ret += ")"
 	return ret
 }
+
+func (structure *Structure) HashStr() string {
+	ret := structure.structType.name
+	for _, field := range structure.structType.fields {
+		hashableValue := structure.values[field].(Hashable)
+		ret += "#" + hashableValue.HashStr()
+	}
+
+	return ret
+}
