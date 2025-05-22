@@ -154,3 +154,24 @@ func (structure *Structure) HashStr() string {
 
 	return ret
 }
+
+func (structure *Structure) IsEqual(other ValueObject) bool {
+	otherStruct, ok := other.(*Structure)
+	if !ok {
+		return false
+	}
+	if structure.structType != otherStruct.structType {
+		return false
+	}
+
+	for _, field := range structure.structType.fields {
+		val := structure.values[field]
+		otherVal := otherStruct.values[field]
+		equal, _ := valuesEqual(val, otherVal)
+		if !equal {
+			return false
+		}
+	}
+
+	return true
+}

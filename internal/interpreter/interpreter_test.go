@@ -673,6 +673,17 @@ func TestRun(t *testing.T) {
 			want: &Str{"Ballermeier"},
 		},
 		{
+			name: "structures can be compared",
+			args: args{
+				code: `
+				(def-struct person (name first-name))
+				(def ego (create-person "Bollmeier" "Thomas"))
+				(def alter-ego (create-person "Bollmeier" "Thomas"))
+				(equal? ego alter-ego)`,
+			},
+			want: &Boolean{true},
+		},
+		{
 			name: "evaluate with shebang",
 			args: args{
 				code: `
