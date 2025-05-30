@@ -11,15 +11,29 @@ func makeOperatorFn(
 
 	binFn := makeBinOp(op)
 
-	return func(numbers []ValueObject) (ValueObject, error) {
+	return func(values []ValueObject) (ValueObject, error) {
 		var ret ValueObject
 		var err error
+		var numbers []ValueObject
 
-		n := len(numbers)
+		n := len(values)
 
 		if n == 0 {
 			return nil, errors.New("no arguments given for operator '" + op + "'")
 		}
+
+		if n > 1 {
+			numbers = values
+		} else {
+			switch op {
+			case "*", "/":
+				numbers = append([]ValueObject{&Integer{1}}, values...)
+			default:
+				numbers = append([]ValueObject{&Integer{0}}, values...)
+			}
+			n++
+		}
+
 		if leftAssoc {
 			ret = numbers[0]
 			for _, number := range numbers[1:] {

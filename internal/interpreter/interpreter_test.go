@@ -94,6 +94,13 @@ func TestRun(t *testing.T) {
 			want: &Rational{1, 3},
 		},
 		{
+			name: "evaluate division with single argument",
+			args: args{
+				code: "(/ 3)",
+			},
+			want: &Rational{1, 3},
+		},
+		{
 			name: "evaluate integer division",
 			args: args{
 				code: "(// 26 5 2)",
