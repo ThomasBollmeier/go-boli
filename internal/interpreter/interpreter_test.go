@@ -258,6 +258,14 @@ func TestRun(t *testing.T) {
 			want: &Integer{42},
 		},
 		{
+			name: "evaluate definition with lambda",
+			args: args{
+				code: `(def λambda "lambda")
+					   λambda`,
+			},
+			want: &Str{"lambda"},
+		},
+		{
 			name: "value can be changed",
 			args: args{
 				code: `

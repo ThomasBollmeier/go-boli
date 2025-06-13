@@ -57,7 +57,6 @@ var SingleCharTokens = map[rune]TokenType{
 	'*': TokAsterisk,
 	'^': TokCaret,
 	'%': TokPercentage,
-	'λ': TokLambda,
 }
 
 var OpeningClosingPairs = map[TokenType]TokenType{
@@ -84,6 +83,7 @@ var Keywords = map[string]TokenType{
 	"and":        TokAnd,
 	"or":         TokOr,
 	"lambda":     TokLambda,
+	"λ":          TokLambda,
 	"set!":       TokSetBang,
 }
 
