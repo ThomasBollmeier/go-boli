@@ -1,7 +1,10 @@
 (provide 
   'string-find
   'string-split
-  'string-starts-with?)
+  'string-starts-with?
+  'string->list)
+
+(require 'list)
 
 (def (string-find s search)
   (def len-search (string-count search))
@@ -35,3 +38,12 @@
 (def (string-starts-with? s prefix)
     (let ([n (count prefix)])
         (equal? prefix (take n s))))
+
+(def (string->list s)
+     (def (helper s acc)
+     	  (if (empty? s)
+	      (reverse acc)
+	      (helper (cdr s)
+	      	      (cons (car s)
+		      	    acc))))
+     (helper s (list)))

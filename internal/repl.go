@@ -2,12 +2,13 @@ package internal
 
 import (
 	"fmt"
-	"github.com/ergochat/readline"
 	"go-boli/internal/frontend"
 	ip "go-boli/internal/interpreter"
+
+	"github.com/ergochat/readline"
 )
 
-const Version = "0.4.34"
+const Version = "0.4.35"
 
 var ProgInfo = fmt.Sprintf("(B)ollmeier's (O)wn (L)isp (I)mplementation - Version %s\n", Version)
 
