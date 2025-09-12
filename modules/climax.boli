@@ -1,0 +1,23 @@
+(require 'string
+	 'list)
+
+(def-struct input (chars idx))
+
+(def (string->input s)
+     (create-input (list->vector (string->list s))
+     		   0))
+
+(def (input-done? in)
+     (>= (input-idx in)
+     	 (count (input-chars in))))
+
+(def (input-peek in)
+     (vector-ref (input-chars in)
+     		 (input-idx in)))
+
+(def (input-advance! in)
+     (let ([curr-idx (input-idx in)]
+     	   [ch (input-peek in)])
+     	  (input-set-idx! in (+ curr-idx 1))
+     	  ch))
+
