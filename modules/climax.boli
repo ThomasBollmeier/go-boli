@@ -7,17 +7,37 @@
      (create-input (list->vector (string->list s))
      		   0))
 
-(def (input-done? in)
+(def (done? in)
      (>= (input-idx in)
      	 (count (input-chars in))))
 
-(def (input-peek in)
+(def (peek in)
      (vector-ref (input-chars in)
      		 (input-idx in)))
 
-(def (input-advance! in)
+(def (advance! in)
      (let ([curr-idx (input-idx in)]
-     	   [ch (input-peek in)])
+     	   [ch (peek in)])
      	  (input-set-idx! in (+ curr-idx 1))
      	  ch))
 
+(def (skip-whitespace! in)
+     (if (not (done? in))
+     	 (let ([ch (peek in)])
+	      (if (char-whitespace? ch)
+	      	  (block
+			(advance! in)
+			(skip-whitespace! in))
+		  nil))
+	 nil))
+
+(def (scan-arg! in)
+     (def (helper! in acc)
+     	  (if (done? in)
+	      acc
+	      (let ([ch (peek in)])
+	      	   (if (char-whitespace? ch)
+		       acc
+		       (block (advance! in)
+		       	      (helper! in (string-concat acc ch)))))))
+     (helper! in ""))
