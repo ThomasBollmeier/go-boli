@@ -11,9 +11,15 @@
      (>= (input-idx in)
      	 (count (input-chars in))))
 
+(def (peek in offset)
+     (let ([chars (input-chars in)]
+     	   [idx (+ (input-idx in) offset)])
+     	  (if (< idx (count chars))
+     	      (vector-ref chars idx)
+	      nil)))
+
 (def (peek in)
-     (vector-ref (input-chars in)
-     		 (input-idx in)))
+     (peek in 0))
 
 (def (advance! in)
      (let ([curr-idx (input-idx in)]
@@ -22,22 +28,42 @@
      	  ch))
 
 (def (skip-whitespace! in)
-     (if (not (done? in))
-     	 (let ([ch (peek in)])
-	      (if (char-whitespace? ch)
-	      	  (block
-			(advance! in)
-			(skip-whitespace! in))
-		  nil))
-	 nil))
+     (let ([ch (peek in)])
+	  (if (and (not (nil? ch))
+	      	   (char-whitespace? ch))
+	      (block (advance! in)
+	      	     (skip-whitespace! in))
+	      nil)))
 
-(def (scan-arg! in)
+(def (scan-until! in init-str pred include-stop?)
      (def (helper! in acc)
      	  (if (done? in)
 	      acc
 	      (let ([ch (peek in)])
-	      	   (if (char-whitespace? ch)
-		       acc
+	      	   (if (pred ch)
+		       (if include-stop?
+		       	   (block (advance! in)
+		       	   	  (string-concat acc ch))
+		       	   acc)
 		       (block (advance! in)
 		       	      (helper! in (string-concat acc ch)))))))
-     (helper! in ""))
+     (helper! in init-str))
+     
+(def (scan-arg! in)
+     (scan-until! in
+     		  ""
+		  char-whitespace?
+		  #false))
+
+(def (scan-string! in)
+     (scan-until! in
+     		  "\""
+		  (λ (ch) (equal? ch "\""))
+		  #true))
+
+(def (scan! in)
+     (skip-whitespace! in)
+     (let ([ch (peek in)])
+     	  (cond [(equal? ch "\"") (block (advance! in)
+	  		    	  	 (scan-string! in))]
+		[#t (scan-arg! in)])))

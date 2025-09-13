@@ -59,7 +59,7 @@
      (create-set ...(list->vector (string->list "0123456789"))))
 
 (def whitespace-chars
-     (create-set ...(list->vector (string->list " \t\n\r"))))
+     (create-set ...(list->vector (string->list " \t\n"))))
 
 (def (char-alpha? ch)
      (set-contains? alpha-chars ch))
