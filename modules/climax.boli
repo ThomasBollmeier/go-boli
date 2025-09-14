@@ -1,6 +1,28 @@
 (require 'string
 	 'list)
 
+(def-struct option (name value-required?))
+
+(def-struct options (short-opts long-opts))
+
+(def (create-config)
+     (create-options (create-hash-table)
+     		     (create-hash-table)))
+
+(def (add-option! conf short long value-required?)
+     (if (not (nil? short))
+     	 (let ([short-opts (options-short-opts conf)])
+	      (hash-set! short-opts
+	      		 short
+			 (create-option short value-required?)))
+	 nil)
+     (if (not (nil? long))
+     	 (let ([long-opts (options-long-opts conf)])
+	      (hash-set! long-opts
+	      		 long
+			 (create-option long value-required?)))
+	 nil))
+
 (def-struct input (chars idx))
 
 (def (string->input s)
