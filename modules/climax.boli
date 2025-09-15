@@ -9,7 +9,7 @@
      (create-options (create-hash-table)
      		     (create-hash-table)))
 
-(def (add-option! conf short long value-required?)
+(def (config-add-option! conf short long value-required?)
      (if (not (nil? short))
      	 (let ([short-opts (options-short-opts conf)])
 	      (hash-set! short-opts
@@ -22,6 +22,23 @@
 	      		 long
 			 (create-option long value-required?)))
 	 nil))
+
+(def (short-option? conf optname)
+     (hash-contains? (options-short-opts conf)
+     		     optname))
+
+(def (long-option? conf optname)
+     (hash-contains? (options-long-opts conf)
+     		     optname))
+
+(def (value-required? conf optname)
+     (if (short-option? conf optname)
+     	 (option-value-required? (hash-get (options-short-opts conf)
+	 			 	   optname))
+	 (if (long-option? conf optname)
+	     (option-value-required? (hash-get (options-long-opts conf)
+	     			     	       optname))
+	     #false)))
 
 (def-struct input (chars idx))
 
@@ -83,9 +100,41 @@
 		  (λ (ch) (equal? ch "\""))
 		  #true))
 
-(def (scan! in)
+(def (scan-opt-value! in)
+     (skip-whitespace! in)
+     (let ([ch (peek in)])
+     	  (if (equal? ch "\"")
+	      (block (advance! in)
+	      	     (scan-string! in))
+	      (scan-arg! in))))
+
+(def (scan-short-opt! conf in)
+     (let ([opt (peek in)])
+     	  (if (short-option? conf opt)
+	      (block (advance! in)
+		     (if (value-required? conf opt)
+	      	     	 (opt . (scan-opt-value! in))
+		  	 (opt . "")))
+	      (error (string-concat opt " is not an option")))))
+
+(def (scan-long-opt! conf in))
+
+(def (scan! conf in)
      (skip-whitespace! in)
      (let ([ch (peek in)])
      	  (cond [(equal? ch "\"") (block (advance! in)
 	  		    	  	 (scan-string! in))]
+		[(equal? ch "-") (block (advance! in)
+			    	 	(let ([ch (peek in)])
+					     (if (equal? ch "-")
+					     	 (block (advance! in)
+							(scan-long-opt! conf in))
+						 (scan-short-opt! conf in))))]
 		[#t (scan-arg! in)])))
+
+(def (config-parse conf s)
+     (def (helper in acc)
+     	  (if (done? in)
+	      (reverse acc)
+	      (helper in (cons (scan! conf in) acc))))
+     (helper (string->input s) '()))

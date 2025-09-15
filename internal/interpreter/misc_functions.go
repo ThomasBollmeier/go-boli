@@ -83,3 +83,15 @@ func writeln(objects []ValueObject) (ValueObject, error) {
 
 	return GetNilObject(), nil
 }
+
+func raiseError(objects []ValueObject) (ValueObject, error) {
+	if len(objects) != 1 {
+		return nil, fmt.Errorf("error function expects exactly one argument, got %d", len(objects))
+	}
+	s, ok := objects[0].(*Str)
+	if ok {
+		return nil, fmt.Errorf("error: %s", s.Value)
+	} else {
+		return nil, fmt.Errorf("error expects string as argument")
+	}
+}
