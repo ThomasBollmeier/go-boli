@@ -78,3 +78,10 @@ Various list functions
 		       	    (helper (cdr l) acc2))
 		       (helper (cdr l) (cons el acc))))))
     (helper lst '()))
+
+(def (for-each items fn)
+	(if (empty? items)
+		nil
+		(block
+			(fn (car items))
+			(for-each (cdr items) fn))))

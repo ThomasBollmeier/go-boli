@@ -8,7 +8,7 @@ import (
 	"github.com/ergochat/readline"
 )
 
-const Version = "0.4.35"
+const Version = "0.4.36"
 
 var ProgInfo = fmt.Sprintf("(B)ollmeier's (O)wn (L)isp (I)mplementation - Version %s\n", Version)
 

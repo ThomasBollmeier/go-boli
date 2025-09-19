@@ -1,5 +1,9 @@
 (require 'string
-	 'list)
+	       'list)
+
+(provide 'create-config
+         'config-add-option!
+				 'config-parse)
 
 (def-struct option (name value-required?))
 
@@ -95,10 +99,11 @@
 		  #false))
 
 (def (scan-string! in)
-     (scan-until! in
-     		  "\""
-		  (λ (ch) (equal? ch "\""))
-		  #true))
+	(let ([s (scan-until! in "" (λ (ch) (equal? ch "\"")) #false)])
+		(if (not (done? in))
+			(advance! in)
+			nil)
+		s))
 
 (def (scan-opt-value! in)
      (skip-whitespace! in)
@@ -109,32 +114,62 @@
 	      (scan-arg! in))))
 
 (def (scan-short-opt! conf in)
-     (let ([opt (peek in)])
-     	  (if (short-option? conf opt)
-	      (block (advance! in)
-		     (if (value-required? conf opt)
-	      	     	 (opt . (scan-opt-value! in))
-		  	 (opt . "")))
-	      (error (string-concat opt " is not an option")))))
+  (def (helper acc)
+	  (let ([ch (peek in)])
+			(cond [(or (nil? ch) 
+			       (char-whitespace? ch)) (reverse acc)]
+				    [(short-option? conf ch)
+						 (block
+						 	 (advance! in)
+						   (if (value-required? conf ch)
+						       (reverse (cons (ch . (scan-opt-value! in)) acc))
+						       (helper (cons (ch . "") acc))))]
+						[#t 
+						 (error (string-concat ch " is not an option"))])))
+	(helper '()))
 
-(def (scan-long-opt! conf in))
+(def (scan-long-opt! conf in)
+	(let ([opt (scan-until! in "" (λ (ch) (or (char-whitespace? ch) (equal? ch "="))) #f)])
+		(if (long-option? conf opt)
+			(if (value-required? conf opt)
+				(block
+					(skip-whitespace! in)
+					(if (equal? (peek in) "=")
+						(block 
+							(advance! in)
+							(opt . (scan-opt-value! in)))
+						(error "expected '=' but got none")))
+				(opt . ""))
+			(error (string-concat opt " is not an option")))))
 
 (def (scan! conf in)
      (skip-whitespace! in)
      (let ([ch (peek in)])
      	  (cond [(equal? ch "\"") (block (advance! in)
-	  		    	  	 (scan-string! in))]
-		[(equal? ch "-") (block (advance! in)
-			    	 	(let ([ch (peek in)])
-					     (if (equal? ch "-")
-					     	 (block (advance! in)
-							(scan-long-opt! conf in))
-						 (scan-short-opt! conf in))))]
-		[#t (scan-arg! in)])))
+	  		    	  	                     (scan-string! in))]
+		          [(equal? ch "-") (block (advance! in)
+			    	 		                      (let ([ch (peek in)])
+					                               (if (equal? ch "-")
+					     	                           (block (advance! in)
+							                                    (scan-long-opt! conf in))
+						                               (scan-short-opt! conf in))))]
+							[#t (scan-arg! in)])))
 
 (def (config-parse conf s)
-     (def (helper in acc)
+     (def (parse-args-opts in acc)
      	  (if (done? in)
-	      (reverse acc)
-	      (helper in (cons (scan! conf in) acc))))
-     (helper (string->input s) '()))
+	      	(flatten-n 1 (reverse acc))
+	      	(parse-args-opts in (cons (scan! conf in) acc))))
+		 (def (separate aos args opts)
+		 	 (if (empty? aos)
+			 	 (args . opts)
+				 (let ([ao (car aos)])
+				 	(block
+						(if (pair? ao)
+							(hash-set! opts (car ao) (cdr ao))
+							(vector-append! args ao))
+						(separate (cdr aos) args opts)))))
+     (separate
+		 	 (parse-args-opts (string->input s) '())
+			 (vector)
+			 (create-hash-table)))
