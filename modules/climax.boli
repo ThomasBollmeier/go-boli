@@ -1,9 +1,10 @@
 (require 'string
-	       'list)
+         'list)
 
 (provide 'create-config
          'config-add-option!
-				 'config-parse)
+	 'config-parse
+	 'config-parse-args)
 
 (def-struct option (name value-required?))
 
@@ -173,3 +174,6 @@
 		 	 (parse-args-opts (string->input s) '())
 			 (vector)
 			 (create-hash-table)))
+
+(def (config-parse-args conf args)
+     (config-parse conf (foldl (λ (acc arg) (string-concat acc " " arg)) "" args)))
