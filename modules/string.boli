@@ -1,7 +1,14 @@
 (provide 
   'string-find
   'string-split
-  'string-starts-with?)
+  'string-starts-with?
+  'string->list
+  'char-alpha?
+  'char-numeric?
+  'char-alpha-numeric?
+  'char-whitespace?)
+
+(require 'list)
 
 (def (string-find s search)
   (def len-search (string-count search))
@@ -35,3 +42,35 @@
 (def (string-starts-with? s prefix)
     (let ([n (count prefix)])
         (equal? prefix (take n s))))
+
+(def (string->list s)
+     (def (helper s acc)
+     	  (if (empty? s)
+	      (reverse acc)
+	      (helper (cdr s)
+	      	      (cons (car s)
+		      	    acc))))
+  (helper s (list)))
+
+(def alpha-chars
+     (create-set ...(list->vector (string->list "abcdefghijklmnopqrstuvxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"))))
+
+(def number-chars
+     (create-set ...(list->vector (string->list "0123456789"))))
+
+(def whitespace-chars
+     (create-set ...(list->vector (string->list " \t\n"))))
+
+(def (char-alpha? ch)
+     (set-contains? alpha-chars ch))
+
+(def (char-numeric? ch)
+     (set-contains? number-chars ch))
+
+(def (char-alpha-numeric? ch)
+     (or (char-alpha? ch)
+     	 (char-numeric? ch)))
+
+(def (char-whitespace? ch)
+     (set-contains? whitespace-chars ch))
+

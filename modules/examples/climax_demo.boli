@@ -1,0 +1,25 @@
+(require 'climax 'list)
+
+
+(def cli (create-config))
+(config-add-option! cli "a" "alpha" #f)
+(config-add-option! cli "b" "beta" #t)
+(config-add-option! cli "h" "help" #f)
+
+(def command "myprog -ah --beta=\"Thomas Bollmeier\" arg1 arg2")
+
+(writeln command)
+
+(let ([args-opts (config-parse cli command)]
+      [args (car args-opts)]
+      [opts (cdr args-opts)])
+  (writeln "Arguments:")
+  (for-each args (λ (arg) (writeln (string-concat "  " arg))))
+  (writeln "Options:")
+  (for-each (hash-keys opts) (λ (opt) (writeln (string-concat 
+    "  " 
+    opt 
+    " (" 
+    (hash-get opts opt)
+    ")")))))
+

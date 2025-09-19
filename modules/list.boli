@@ -30,14 +30,13 @@ Various list functions
 (def (foldl fn init-val lst)
      (if (empty? lst)
      	 init-val
-	     (foldl 
-	 	     fn
-		     (fn init-val (car lst))
-         (cdr lst))))
+	 (foldl fn
+		(fn init-val (car lst))
+         	(cdr lst))))
 
 (def (foldr fn init-val lst)
      (foldl (λ (acc it) (fn it acc))
-	          init-val
+	    init-val
             (reverse lst)))
 
 (def (reduce fn lst)
@@ -51,3 +50,38 @@ Various list functions
 		(vector-append! acc (car lst))
 		(helper (cdr lst) acc))))
      (helper lst (vector)))
+
+(def (flatten-n depth lst)
+     (def (helper l acc)
+     	  (if (empty? l)
+	      (reverse acc)
+	      (let ([el (car l)])
+	      	   (if (and (list? el)
+		       	    (> depth 0))
+		       (let ([acc2 (foldl (λ (a it) (cons it a))
+		       	    	   	  acc
+					  (flatten-n (- depth 1)
+					   	     el))])
+		       	    (helper (cdr l) acc2))
+		       (helper (cdr l) (cons el acc))))))
+    (helper lst '()))
+
+(def (flatten lst)
+     (def (helper l acc)
+     	  (if (empty? l)
+	      (reverse acc)
+	      (let ([el (car l)])
+	      	   (if (list? el)
+		       (let ([acc2 (foldl (λ (a it) (cons it a))
+		       	    	   	  acc
+					  (flatten el))])
+		       	    (helper (cdr l) acc2))
+		       (helper (cdr l) (cons el acc))))))
+    (helper lst '()))
+
+(def (for-each items fn)
+	(if (empty? items)
+		nil
+		(block
+			(fn (car items))
+			(for-each (cdr items) fn))))

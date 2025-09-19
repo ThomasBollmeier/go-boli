@@ -119,6 +119,9 @@ func NewGlobalEnv() *Environment {
 	ret.SetGlobalBuiltinFunc("write", write)
 	ret.SetGlobalBuiltinFunc("writeln", writeln)
 
+	// Error handling
+	ret.SetGlobalBuiltinFunc("error", raiseError)
+	
 	// functions to create random numbers:
 	ret.SetGlobalBuiltinFunc("random-seed", randomSeed)
 	ret.SetGlobalBuiltinFunc("random-int", randomInteger)

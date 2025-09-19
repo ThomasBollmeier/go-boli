@@ -39,7 +39,7 @@ func cdr(objects []ValueObject) (ValueObject, error) {
 	}
 	sequence, ok := objects[0].(Sequence)
 	if !ok {
-		return nil, fmt.Errorf("cdr requires a sequence")
+		return nil, fmt.Errorf("cdr requires a sequence, got %d", objects[0])
 	}
 	return sequence.Cdr()
 }
