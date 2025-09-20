@@ -15,17 +15,18 @@
      		     (create-hash-table)))
 
 (def (config-add-option! conf short long value-required?)
+     (def name (if (not (nil? long)) long short))
      (if (not (nil? short))
      	 (let ([short-opts (options-short-opts conf)])
 	      (hash-set! short-opts
 	      		 short
-			 (create-option short value-required?)))
+			 (create-option name value-required?)))
 	 nil)
      (if (not (nil? long))
      	 (let ([long-opts (options-long-opts conf)])
 	      (hash-set! long-opts
 	      		 long
-			 (create-option long value-required?)))
+			 (create-option name value-required?)))
 	 nil))
 
 (def (short-option? conf optname)
@@ -43,7 +44,16 @@
 	 (if (long-option? conf optname)
 	     (option-value-required? (hash-get (options-long-opts conf)
 	     			     	       optname))
-	     #false)))
+	     (error (string-concat "Unknown option: " optname)))))
+
+(def (component-name conf optname)
+     (if (short-option? conf optname)
+     	 (option-name (hash-get (options-short-opts conf)
+	 			optname))
+	 (if (long-option? conf optname)
+	     (option-name (hash-get (options-long-opts conf)
+	     			    optname))
+	     (error (string-concat "Unknown option: " optname)))))
 
 (def-struct input (chars idx))
 
@@ -167,7 +177,9 @@
 				 (let ([ao (car aos)])
 				 	(block
 						(if (pair? ao)
-							(hash-set! opts (car ao) (cdr ao))
+							(hash-set! opts
+								   (component-name conf (car ao))
+								   (cdr ao))
 							(vector-append! args ao))
 						(separate (cdr aos) args opts)))))
      (separate
