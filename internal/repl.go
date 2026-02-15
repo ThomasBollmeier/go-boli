@@ -8,7 +8,7 @@ import (
 	"github.com/chzyer/readline"
 )
 
-const Version = "0.5.0"
+const Version = "0.5.1"
 
 var ProgInfo = fmt.Sprintf("(B)ollmeier's (O)wn (L)isp (I)mplementation - Version %s\n", Version)
 

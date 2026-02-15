@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"fmt"
 	ip "go-boli/internal/interpreter"
 	"strings"
 
@@ -25,19 +24,53 @@ func (ac *AutoCompleter) NewPrefixCompleter() *readline.PrefixCompleter {
 func (ac *AutoCompleter) getCompletions(prefix string) []string {
 	var completions []string
 
-	if prefix == "" {
-		return ac.env.GetNames()
+	startPos := findStartPos(prefix)
+	var firstPart, lastPart string
+
+	if startPos != -1 {
+		firstPart = prefix[:startPos]
+		lastPart = prefix[startPos:]
+	} else {
+		firstPart = prefix
+		lastPart = ""
 	}
-	parts := strings.Fields(prefix)
-	lastPart := parts[len(parts)-1]
 
 	names := ac.env.GetNames()
 	for _, name := range names {
 		if strings.HasPrefix(name, lastPart) {
-			completions = append(completions, name)
-			fmt.Println(name)
+			completions = append(completions, firstPart+name)
 		}
 	}
 
 	return completions
+}
+
+func findStartPos(prefix string) int {
+	toIgnore := map[rune]bool{
+		' ':  true,
+		'\t': true,
+		'\n': true,
+		'(':  true,
+		')':  true,
+		'[':  true,
+		']':  true,
+		'{':  true,
+		'}':  true,
+	}
+
+	prevToIgnore := true
+	ret := -1
+
+	for i, ch := range prefix {
+		if toIgnore[ch] {
+			prevToIgnore = true
+			continue
+		}
+		if prevToIgnore {
+			ret = i
+			prevToIgnore = false
+		}
+	}
+
+	return ret
 }
