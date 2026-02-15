@@ -3,6 +3,7 @@ package interpreter
 import (
 	"errors"
 	"fmt"
+	"sort"
 )
 
 type Environment struct {
@@ -121,7 +122,7 @@ func NewGlobalEnv() *Environment {
 
 	// Error handling
 	ret.SetGlobalBuiltinFunc("error", raiseError)
-	
+
 	// functions to create random numbers:
 	ret.SetGlobalBuiltinFunc("random-seed", randomSeed)
 	ret.SetGlobalBuiltinFunc("random-int", randomInteger)
@@ -207,4 +208,14 @@ func (env *Environment) GetProvidedValues() (map[string]ValueObject, error) {
 	}
 
 	return ret, nil
+}
+
+func (env *Environment) GetNames() []string {
+	names := make([]string, 0, len(env.entries))
+	for name := range env.entries {
+		names = append(names, name)
+	}
+	// Sort names alphabetically for better user experience:
+	sort.Strings(names)
+	return names
 }

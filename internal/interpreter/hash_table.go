@@ -31,11 +31,24 @@ func (ht *HashTable) String() string {
 }
 
 func createHashTable(objects []ValueObject) (ValueObject, error) {
-	if len(objects) != 0 {
-		return nil, fmt.Errorf("create-hash-table expects 0 arguments, got %d", len(objects))
+	if len(objects)%2 != 0 {
+		return nil, fmt.Errorf("create-hash-table expects an even number of arguments, got %d", len(objects))
 	}
 
-	return NewHashTable(), nil
+	ret := NewHashTable()
+	for i := 0; i < len(objects); i += 2 {
+		key, ok := objects[i].(Hashable)
+		if !ok {
+			return nil, fmt.Errorf("expected a hashable value as argument %d of create-hash-table", i+1)
+		}
+
+		ret.entries[key.HashStr()] = HashEntry{
+			key:   key,
+			value: objects[i+1],
+		}
+	}
+
+	return ret, nil
 }
 
 func hashLength(objects []ValueObject) (ValueObject, error) {

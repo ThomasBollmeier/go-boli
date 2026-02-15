@@ -720,6 +720,15 @@ func TestRun(t *testing.T) {
 			want: &HashTable{entries: make(map[string]HashEntry)},
 		},
 		{
+			name: "evaluate create-hash-table with initial values",
+			args: args{
+				code: `
+				(def ht (create-hash-table "foo" 42 "bar" "baz"))
+				(hash-get ht "foo")`,
+			},
+			want: &Integer{42},
+		},
+		{
 			name: "evaluate hash-set!",
 			args: args{
 				code: `

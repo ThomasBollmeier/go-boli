@@ -1,10 +1,10 @@
 module go-boli
 
-go 1.23.1
+go 1.24.0
 
-require github.com/ergochat/readline v0.1.3
+require github.com/chzyer/readline v1.5.1
 
 require (
-	golang.org/x/sys v0.29.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
+	golang.org/x/sys v0.41.0 // indirect
+	golang.org/x/text v0.34.0 // indirect
 )

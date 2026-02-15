@@ -31,6 +31,10 @@ func NewInterpreter(env *Environment) *Interpreter {
 	}
 }
 
+func (interpreter *Interpreter) GetEnvironment() *Environment {
+	return interpreter.env
+}
+
 func (interpreter *Interpreter) Run(code string) (ValueObject, error) {
 	ast, err := interpreter.parser.Parse(frontend.NewCharStreamString(code))
 	if err != nil {

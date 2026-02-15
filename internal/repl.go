@@ -5,10 +5,10 @@ import (
 	"go-boli/internal/frontend"
 	ip "go-boli/internal/interpreter"
 
-	"github.com/ergochat/readline"
+	"github.com/chzyer/readline"
 )
 
-const Version = "0.4.36"
+const Version = "0.5.0"
 
 var ProgInfo = fmt.Sprintf("(B)ollmeier's (O)wn (L)isp (I)mplementation - Version %s\n", Version)
 
@@ -20,7 +20,13 @@ func Repl() {
 	fmt.Println("Type ':q' to quit")
 	fmt.Println()
 
-	rl, err := readline.New("boλi> ")
+	interpreter := ip.NewInterpreter(nil)
+
+	rl, err := readline.NewEx(&readline.Config{
+		Prompt:       "boλi> ",
+		AutoComplete: NewAutoCompleter(interpreter.GetEnvironment()).NewPrefixCompleter(),
+	})
+
 	if err != nil {
 		return
 	}
@@ -28,7 +34,6 @@ func Repl() {
 		_ = rl.Close()
 	}(rl)
 
-	interpreter := ip.NewInterpreter(nil)
 	code := ""
 
 	for {
