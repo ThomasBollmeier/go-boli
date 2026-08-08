@@ -3,6 +3,7 @@ package interpreter
 import (
 	"errors"
 	"fmt"
+	"strings"
 )
 
 type Pair struct {
@@ -25,7 +26,8 @@ func (p *Pair) String() string {
 
 	if b := p.IsList(); b.Value {
 		var curr ValueObject
-		ret := "(list "
+		var ret strings.Builder
+		ret.WriteString("(list ")
 		curr = p
 		first := true
 	listLoop:
@@ -34,21 +36,21 @@ func (p *Pair) String() string {
 			case ValuePair:
 				pair := curr.(*Pair)
 				if !first {
-					ret += " "
+					ret.WriteString(" ")
 				} else {
 					first = false
 				}
-				ret += fmt.Sprintf("%s", pair.first)
+				ret.WriteString(fmt.Sprintf("%s", pair.first))
 				curr = pair.second
 			case ValueNil:
-				ret += ")"
+				ret.WriteString(")")
 				break listLoop
 			default:
 				panic("unexpected value type")
 			}
 		}
 
-		return ret
+		return ret.String()
 	}
 
 	return fmt.Sprintf("(cons %s %s)", p.first, p.second)
