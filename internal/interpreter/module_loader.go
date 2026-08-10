@@ -43,8 +43,8 @@ func getModuleDirs() []string {
 
 	pathVar, ok := os.LookupEnv(ModulePathEnvVar)
 	if ok {
-		paths := strings.Split(pathVar, string(os.PathListSeparator))
-		for _, path := range paths {
+		paths := strings.SplitSeq(pathVar, string(os.PathListSeparator))
+		for path := range paths {
 			moduleDirs = append(moduleDirs, path+string(os.PathSeparator))
 		}
 	}
@@ -77,7 +77,7 @@ func loadModule(sourceFactory SourceFactory, moduleName, alias string) (map[stri
 		return nil, err
 	}
 
-	valueMap, err := loadValues(source)
+	valueMap, err := loadValues(source, moduleName)
 	if err != nil {
 		return nil, err
 	}
@@ -94,18 +94,26 @@ func loadModule(sourceFactory SourceFactory, moduleName, alias string) (map[stri
 	return aliasedValueMap, nil
 }
 
-func loadValues(source Source) (map[string]ValueObject, error) {
+func loadValues(source Source, moduleName string) (map[string]ValueObject, error) {
 	code, err := source.Read()
-	if err != nil {
-		return nil, err
+	if err == nil {
+		return provideValues(code)
 	}
 
+	// module not found as source module => check if a builtin module exists
+	if builtinModule, ok := builtinModules[moduleName]; ok {
+		return builtinModule.GetValues(), nil
+	}
+
+	return nil, err
+}
+
+func provideValues(code string) (map[string]ValueObject, error) {
 	interpreter := NewInterpreter(nil)
-	_, err = interpreter.Run(code)
+	_, err := interpreter.Run(code)
 	if err != nil {
 		return nil, err
 	}
-
 	providedValues, err := interpreter.env.GetProvidedValues()
 	if err != nil {
 		return nil, err
