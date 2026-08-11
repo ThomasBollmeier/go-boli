@@ -9,6 +9,12 @@ func NewMath() *BuiltInModule {
 	result := NewBuiltInModule()
 	result.AddValue("sqrt", makeSingleRealArgFn("sqrt", math.Sqrt))
 	result.AddValue("exp", makeSingleRealArgFn("exp", math.Exp))
+	result.AddValue("sin", makeSingleRealArgFn("sin", math.Sin))
+	result.AddValue("cos", makeSingleRealArgFn("cos", math.Cos))
+	result.AddValue("tan", makeSingleRealArgFn("tan", math.Tan))
+	result.AddValue("sinh", makeSingleRealArgFn("sinh", math.Sinh))
+	result.AddValue("cosh", makeSingleRealArgFn("cosh", math.Cosh))
+	result.AddValue("tanh", makeSingleRealArgFn("tanh", math.Tanh))
 	return result
 }
 

@@ -73,13 +73,21 @@ func loadModule(sourceFactory SourceFactory, moduleName, alias string) (map[stri
 	path := strings.Join(append(parts[:l-1], filename), string(os.PathSeparator))
 
 	source, err := sourceFactory.GetSource(path)
-	if err != nil {
-		return nil, err
-	}
 
-	valueMap, err := loadValues(source, moduleName)
-	if err != nil {
-		return nil, err
+	var valueMap map[string]ValueObject
+
+	if err == nil {
+		valueMap, err = loadValues(source, moduleName)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		if builtinModule, ok := builtinModules[moduleName]; ok {
+			valueMap = builtinModule.GetValues()
+			err = nil
+		} else {
+			return nil, err
+		}
 	}
 
 	if alias == "" {

@@ -73,6 +73,26 @@ func TestRequire(t *testing.T) {
 
 }
 
+func TestRequireBuiltin(t *testing.T) {
+	mainCode := `
+		(require ('math . 'm))
+		(m::sqrt 16,0)`
+
+	expected := &Real{4.0}
+
+	interpreter := NewInterpreter(nil)
+	interpreter.env.sourceFactory = NewMockSourceFactory()
+
+	actual, err := interpreter.Run(mainCode)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(actual, expected) {
+		t.Errorf("Run() got = %v, want %v", actual, expected)
+	}
+}
+
 func TestRequireNestedWithAlias(t *testing.T) {
 	factory := NewMockSourceFactory()
 
